@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GestionLicencias.Core/GestionLicencias.Core.csproj" />
+    <Project Path="src/GestionLicencias.Infrastructure/GestionLicencias.Infrastructure.csproj" />
+    <Project Path="src/GestionLicencias.Web/GestionLicencias.Web.csproj" />
+  </Folder>
+</Solution>

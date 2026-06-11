@@ -1,0 +1,163 @@
+@page "/modulos/licencias/seguimiento"
+@rendermode InteractiveServer
+@implements IDisposable
+@inject ITramiteService<TramiteLicencia> ModuloService
+@inject NavigationManager Nav
+
+<PageTitle>Seguimiento en Tiempo Real — Gestionador de Licencias</PageTitle>
+
+<div class="f8-wrapper">
+    <div class="f8-topbar">
+        <h2>Seguimiento en Tiempo Real</h2>
+        <div class="f8-actions">
+            <span class="ta-system-status" style="align-self:center;">
+                Actualización automática cada @SegundosRefresco s — última: @UltimaActualizacion.ToString("HH:mm:ss")
+            </span>
+            <button class="f8-btn" @onclick="Cargar">Actualizar ahora</button>
+            <button class="f8-btn f8-btn-primary" @onclick="Volver">Ir al gestionador</button>
+        </div>
+    </div>
+
+    @if (Registros.Count > 0)
+    {
+        <div class="f8-stats">
+            @foreach (var kv in ResumenEtapas())
+            {
+                <div class="f8-stat @(kv.Key == "ENTREGADA" ? "ta-stat-ok" : "ta-stat-warn")">
+                    <strong>@kv.Value</strong> @(kv.Key == "ENTREGADA" ? "ENTREGADAS" : $"EN {kv.Key}")
+                </div>
+            }
+        </div>
+    }
+
+    @if (Cargando)
+    {
+        <p>Cargando...</p>
+    }
+    else if (Registros.Count == 0)
+    {
+        <p>No hay registros activos para seguir.</p>
+    }
+    else
+    {
+        <div class="ta-roads">
+            @foreach (var r in Registros)
+            {
+                var n = Progreso(r);
+                var carPct = n == 0 ? 0 : (n - 1) * 100.0 / (Etapas.Length - 1);
+                <div class="ta-road-card">
+                    <div class="ta-road-head">
+                        <strong>@r.NombreCompleto</strong>
+                        <span class="ta-mono" style="color:var(--ta-on-surface-variant);">@r.RUT</span>
+                        <span class="ta-road-status @(n == Etapas.Length ? "ok" : "")">
+                            @(n == Etapas.Length ? "✓ ENTREGADA" : $"⏸ ESTANCADA EN: {Etapas[n].Nombre}")
+                        </span>
+                    </div>
+                    <div class="ta-road">
+                        <div class="ta-road-line"></div>
+                        <div class="ta-road-fill" style="width:calc(@carPct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)% + 14px);"></div>
+                        @for (var i = 0; i < Etapas.Length; i++)
+                        {
+                            var pct = i * 100.0 / (Etapas.Length - 1);
+                            <div class="ta-road-stop @(i < n ? "done" : "")"
+                                 style="left:@pct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
+                                <span class="dot"></span>
+                                <span class="lbl">@Etapas[i].Nombre</span>
+                            </div>
+                        }
+                        <div class="ta-road-car"
+                             style="left:@carPct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
+                            @(n == Etapas.Length ? "🏁" : "🚗")
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<TramiteLicencia> Registros = new();
+    private bool Cargando = false;
+    private DateTime UltimaActualizacion = DateTime.Now;
+    private const int SegundosRefresco = 15;
+    private PeriodicTimer? _timer;
+
+    private static readonly (string Nombre, Func<TramiteLicencia, bool> Lista)[] Etapas =
+    [
+        ("CITACIÓN", r => r.FechaCitacion.HasValue),
+        ("CARPETA", r => !string.IsNullOrWhiteSpace(r.EstadoCarpeta) || r.FechaUltimaCarpeta.HasValue),
+        ("IDONEIDAD", r => !string.IsNullOrWhiteSpace(r.IdoneidadMoral)),
+        ("F8", r => !string.IsNullOrWhiteSpace(r.EstadoF8) || !string.IsNullOrWhiteSpace(r.FolioF8)),
+        ("OTORGAMIENTO", r => !string.IsNullOrWhiteSpace(r.Otorgamiento)),
+        ("IMPRESIÓN", r => !string.IsNullOrWhiteSpace(r.ImpresaPor) || r.FechaImpresion.HasValue),
+        ("PAM", r => r.BajadaAPam == "SI" || r.FechaRecepcionPam.HasValue || !string.IsNullOrWhiteSpace(r.RecibidaEnPamPor)),
+        ("ENTREGA", r => r.FechaEntrega.HasValue || r.ContactadoParaEntrega == "SI")
+    ];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+        _timer = new PeriodicTimer(TimeSpan.FromSeconds(SegundosRefresco));
+        _ = RefrescoAutomatico();
+    }
+
+    private async Task RefrescoAutomatico()
+    {
+        try
+        {
+            while (_timer is not null && await _timer.WaitForNextTickAsync())
+            {
+                await InvokeAsync(async () =>
+                {
+                    await Cargar();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException) { }
+        catch (ObjectDisposedException) { }
+    }
+
+    private async Task Cargar()
+    {
+        Cargando = Registros.Count == 0;
+        var (res, _) = await ModuloService.BuscarAsync(new BusquedaFilter
+        {
+            Pagina = 1,
+            PageSize = 100000
+        });
+        Registros = res
+            .OrderBy(r => Progreso(r))
+            .ThenBy(r => r.NombreCompleto)
+            .ToList();
+        UltimaActualizacion = DateTime.Now;
+        Cargando = false;
+    }
+
+    // Furthest consecutive completed stage, starting from CITACIÓN.
+    private static int Progreso(TramiteLicencia r)
+    {
+        var n = 0;
+        foreach (var etapa in Etapas)
+        {
+            if (!etapa.Lista(r)) break;
+            n++;
+        }
+        return n;
+    }
+
+    private IEnumerable<KeyValuePair<string, int>> ResumenEtapas() =>
+        Registros
+            .GroupBy(r => { var n = Progreso(r); return n == Etapas.Length ? "ENTREGADA" : Etapas[n].Nombre; })
+            .OrderByDescending(g => g.Count())
+            .Select(g => new KeyValuePair<string, int>(g.Key, g.Count()));
+
+    private void Volver() => Nav.NavigateTo("/modulos/licencias");
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        _timer = null;
+    }
+}

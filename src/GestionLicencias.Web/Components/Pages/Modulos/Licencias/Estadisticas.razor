@@ -1,0 +1,74 @@
+@page "/modulos/licencias/estadisticas"
+@rendermode InteractiveServer
+@inject TramiteLicenciaService StatsService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<PageTitle>Estadísticas — MODELO POWERBI</PageTitle>
+
+<div class="f8-wrapper">
+    <div class="f8-topbar">
+        <h2>Estadísticas del modelo</h2>
+        <div class="f8-actions">
+            <button class="f8-btn" @onclick="Actualizar">Actualizar</button>
+            <button class="f8-btn f8-btn-primary" @onclick="Volver">Volver a la grilla</button>
+        </div>
+    </div>
+
+    @if (Datos is not null)
+    {
+        <div class="f8-stats">
+            <div class="f8-stat"><strong>@Datos.Total</strong> Registros activos</div>
+            <div class="f8-stat"><strong>@Datos.Edades.Count</strong> Con edad registrada</div>
+            <div class="f8-stat"><strong>@Datos.Dispersion.Count</strong> Trámites completos (citación → entrega)</div>
+        </div>
+    }
+
+    <div class="ta-charts-grid">
+        <div class="ta-chart-card">
+            <h3>Distribución por sexo</h3>
+            <canvas id="chSexo"></canvas>
+        </div>
+        <div class="ta-chart-card">
+            <h3>Distribución por otorgamiento</h3>
+            <canvas id="chOtorgamiento"></canvas>
+        </div>
+        <div class="ta-chart-card">
+            <h3>Trámites por tipo de licencia</h3>
+            <canvas id="chTipoLicencia"></canvas>
+        </div>
+        <div class="ta-chart-card">
+            <h3>Trámites por estado de la carpeta</h3>
+            <canvas id="chEstadoCarpeta"></canvas>
+        </div>
+        <div class="ta-chart-card">
+            <h3>Histograma de edades</h3>
+            <canvas id="chEdades"></canvas>
+        </div>
+        <div class="ta-chart-card">
+            <h3>Dispersión: edad vs. días de tramitación</h3>
+            <canvas id="chDispersion"></canvas>
+        </div>
+    </div>
+</div>
+
+@code {
+    private EstadisticasModelo? Datos;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        await CargarYRenderizar();
+    }
+
+    private async Task CargarYRenderizar()
+    {
+        Datos = await StatsService.ObtenerEstadisticasModeloAsync();
+        StateHasChanged();
+        await JS.InvokeVoidAsync("taCharts.render", Datos);
+    }
+
+    private async Task Actualizar() => await CargarYRenderizar();
+
+    private void Volver() => Nav.NavigateTo("/modulos/licencias");
+}

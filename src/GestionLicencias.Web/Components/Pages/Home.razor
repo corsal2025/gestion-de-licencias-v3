@@ -1,0 +1,48 @@
+@page "/"
+@inject ITramiteService<TramiteLicencia> ModuloService
+@inject TramiteLicenciaService StatsService
+
+<PageTitle>Dashboard — Gestión de Licencias</PageTitle>
+
+<div class="home-hero">
+    <h1>Seguimiento de Trámites</h1>
+    <p>
+        Cola de procesamiento de licencias de conducir: citaciones, carpetas, CONASET,
+        F8, otorgamiento, impresión y entrega en PAM.
+    </p>
+
+    <div class="ta-dash-grid">
+        <div class="ta-dash-card">
+            <div class="ta-dash-label">Registros activos</div>
+            <div class="ta-dash-value">@Total</div>
+        </div>
+        @foreach (var kv in Estadisticas.OrderByDescending(k => k.Value))
+        {
+            <div class="ta-dash-card @Clase(kv.Key)">
+                <div class="ta-dash-label">@kv.Key</div>
+                <div class="ta-dash-value">@kv.Value</div>
+            </div>
+        }
+    </div>
+
+    <a class="btn btn-primary" href="modulos/licencias">Abrir módulo de licencias</a>
+</div>
+
+@code {
+    private int Total;
+    private Dictionary<string, int> Estadisticas = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Total = await ModuloService.ObtenerTotalAsync();
+        Estadisticas = await StatsService.ObtenerEstadisticasOtorgamientoAsync();
+    }
+
+    private static string Clase(string otorgamiento) => otorgamiento switch
+    {
+        "OTORGADO" => "ok",
+        "DENEGADO" => "bad",
+        "ESPERA EXÁMEN" => "warn",
+        _ => ""
+    };
+}

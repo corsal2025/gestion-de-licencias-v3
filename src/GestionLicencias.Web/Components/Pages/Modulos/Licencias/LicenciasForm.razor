@@ -1,0 +1,400 @@
+@page "/modulos/licencias/crear"
+@page "/modulos/licencias/editar/{Id:int}"
+@rendermode InteractiveServer
+@inject ITramiteService<TramiteLicencia> ModuloService
+@inject NavigationManager Nav
+
+<PageTitle>@(Id == 0 ? "Nuevo registro" : "Editar registro") — MODELO POWERBI</PageTitle>
+
+<div class="f8-wrapper f8-form">
+    <div class="f8-topbar">
+        <h2>@(Id == 0 ? "Nuevo registro" : "Editar registro")</h2>
+        <div class="f8-actions">
+            <button class="f8-btn" @onclick="Volver">Volver a la lista</button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Mensaje))
+    {
+        <div class="f8-msg @(EsError ? "f8-msg-error" : "f8-msg-ok")">@Mensaje</div>
+    }
+
+    @if (Modelo is null)
+    {
+        <p>Cargando...</p>
+    }
+    else
+    {
+        <fieldset>
+            <legend>Contribuyente y citación</legend>
+            <div class="f8-form-grid">
+                <div class="f8-field">
+                    <label>NOMBRE</label>
+                    <input @bind="Modelo.Nombre" />
+                </div>
+                <div class="f8-field">
+                    <label>APELLIDO</label>
+                    <input @bind="Modelo.Apellido" />
+                </div>
+                <div class="f8-field">
+                    <label>NOMBRE COMPLETO</label>
+                    <input value="@Modelo.NombreCompleto" readonly />
+                </div>
+                <div class="f8-field">
+                    <label>RUT</label>
+                    <input @bind="Modelo.RUT" placeholder="11.111.111-1" />
+                </div>
+                <div class="f8-field">
+                    <label>FECHA DE LA CITACIÓN</label>
+                    <input type="date" @bind="Modelo.FechaCitacion" />
+                </div>
+                <div class="f8-field">
+                    <label>TEFEFONO</label>
+                    <input placeholder="+56 9..." @bind="Modelo.Telefono" />
+                </div>
+                <div class="f8-field">
+                    <label>CORREO ELECRTRONICO</label>
+                    <input class="ta-email" list="ta-email-dl" @bind="Modelo.Email" />
+                </div>
+                <div class="f8-field">
+                    <label>LUGAR DE ATENCIÓN</label>
+                    <select @bind="Modelo.LugarAtencion">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.LugaresAtencion)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>ASISTE</label>
+                    <select @bind="Modelo.Asiste">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.SiNo)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Carpeta</legend>
+            <div class="f8-form-grid">
+                <div class="f8-field">
+                    <label>FECHA ULTIMA CARPETA</label>
+                    <input type="date" @bind="Modelo.FechaUltimaCarpeta" />
+                </div>
+                <div class="f8-field">
+                    <label>ESTADO DE LA CARPETA</label>
+                    <select @bind="Modelo.EstadoCarpeta">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.EstadosCarpeta)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>FECHA DIGITALIZACION CARPETA</label>
+                    <input type="date" @bind="Modelo.FechaDigitalizacionCarpeta" />
+                </div>
+                <div class="f8-field">
+                    <label>IDEONIDAD MORAL</label>
+                    <select @bind="Modelo.IdoneidadMoral">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.IdoneidadMoral)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>CONTACTADO</label>
+                    <select @bind="Modelo.Contactado">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.SiNo)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>NOTIFICADO</label>
+                    <select @bind="Modelo.Notificado">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.SiNo)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Cambio de domicilio</legend>
+            <div class="f8-form-grid">
+                <div class="f8-field">
+                    <label>LUGAR DE ORIGEN CAMBIO DOMICILIO</label>
+                    <input @bind="Modelo.LugarOrigenCambioDomicilio" />
+                </div>
+                <div class="f8-field">
+                    <label>PETICION DE CAMBIO DOMICILIO</label>
+                    <select @bind="Modelo.PeticionCambioDomicilio">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.SiNo)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>CAMBIO DOMICILIO PEDIDO POR</label>
+                    <select @bind="Modelo.CambioDomicilioPedidoPor">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.CambioDomicilioPedidoPor)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>F8</legend>
+            <div class="f8-form-grid">
+                <div class="f8-field">
+                    <label>FOLIO (F8)</label>
+                    <input @bind="Modelo.FolioF8" />
+                </div>
+                <div class="f8-field">
+                    <label>FECHA PENULTIMA CARPETA</label>
+                    <input type="date" @bind="Modelo.FechaPenultimaCarpeta" />
+                </div>
+                <div class="f8-field">
+                    <label>ESTADO DEL F8</label>
+                    <select @bind="Modelo.EstadoF8">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.EstadosF8)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Otorgamiento e impresión</legend>
+            <div class="f8-form-grid">
+                <div class="f8-field">
+                    <label>OTORGAMIENTO</label>
+                    <select @bind="Modelo.Otorgamiento">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.Otorgamientos)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>FOLIO LICENCIA</label>
+                    <input @bind="Modelo.FolioLicencia" />
+                </div>
+                <div class="f8-field">
+                    <label>FECHA IMPRESION</label>
+                    <input type="date" @bind="Modelo.FechaImpresion" />
+                </div>
+                <div class="f8-field">
+                    <label>IMPRESA POR</label>
+                    <select @bind="Modelo.ImpresaPor">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.ImpresaPor)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>PAM y entrega</legend>
+            <div class="f8-form-grid">
+                <div class="f8-field">
+                    <label>BAJADA A PAM</label>
+                    <select @bind="Modelo.BajadaAPam">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.SiNo)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>BAJADA POR</label>
+                    <input @bind="Modelo.BajadaPor" />
+                </div>
+                <div class="f8-field">
+                    <label>FECHA RECEPCION PAM</label>
+                    <input type="date" @bind="Modelo.FechaRecepcionPam" />
+                </div>
+                <div class="f8-field">
+                    <label>RECIBIDA EN PAM POR</label>
+                    <select @bind="Modelo.RecibidaEnPamPor">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.RecibidaEnPamPor)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>CONTACTADO CONTRIBUYENTE PARA ENTREGA</label>
+                    <select @bind="Modelo.ContactadoParaEntrega">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.SiNo)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>FECHA DE ENTREGA</label>
+                    <input type="date" @bind="Modelo.FechaEntrega" />
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Datos personales</legend>
+            <div class="f8-form-grid">
+                <div class="f8-field">
+                    <label>SEXO</label>
+                    <select @bind="Modelo.Sexo">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.Sexos)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>FECHA DE NACIMIENTO</label>
+                    <input type="date" @bind="Modelo.FechaNacimiento" />
+                </div>
+                <div class="f8-field">
+                    <label>EDAD</label>
+                    <input value="@(Modelo.Edad?.ToString() ?? "—")" readonly />
+                </div>
+                <div class="f8-field">
+                    <label>TIPO DE LICENCIA</label>
+                    <select @bind="Modelo.TipoLicencia">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.TiposLicencia)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Observaciones</legend>
+            <div class="f8-field">
+                <label>OBSERVACIONES</label>
+                <input @bind="Modelo.Observaciones" />
+            </div>
+        </fieldset>
+
+        <div class="f8-actions" style="margin-top:1rem;">
+            <button class="f8-btn f8-btn-primary" @onclick="Guardar" disabled="@Guardando">
+                @(Guardando ? "Guardando..." : "Guardar")
+            </button>
+            <button class="f8-btn" @onclick="Volver">Cancelar</button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private TramiteLicencia? Modelo;
+    private string Mensaje = "";
+    private bool EsError = false;
+    private bool Guardando = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Id == 0)
+        {
+            Modelo = new TramiteLicencia
+            {
+                RUT = "",
+                Nombre = "",
+                Email = "",
+                Telefono = "",
+                UsuarioId = "SISTEMA",
+                TipoModulo = "TramiteLicencia"
+            };
+        }
+        else
+        {
+            Modelo = await ModuloService.ObtenerPorIdAsync(Id);
+            if (Modelo is null)
+            {
+                Mensaje = $"No se encontró el registro {Id}.";
+                EsError = true;
+            }
+        }
+    }
+
+    private static string NormalizarTelefono(string? telefono)
+    {
+        var t = (telefono ?? "").Trim();
+        if (t.Length == 0 || t.StartsWith("+56")) return t;
+        t = t.TrimStart('+');
+        if (t.StartsWith("56") && t.Length > 9) return "+" + t;
+        return "+56 " + t;
+    }
+
+    private async Task Guardar()
+    {
+        if (Modelo is null) return;
+
+        Modelo.Telefono = NormalizarTelefono(Modelo.Telefono);
+
+        var (ok, msg) = ModuloService.ValidarTramite(Modelo);
+        if (!ok)
+        {
+            Mensaje = msg;
+            EsError = true;
+            return;
+        }
+
+        Guardando = true;
+        try
+        {
+            if (Id == 0)
+                await ModuloService.CrearAsync(Modelo);
+            else
+                await ModuloService.ActualizarAsync(Modelo);
+            Nav.NavigateTo("/modulos/licencias");
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error al guardar: {ex.Message}";
+            EsError = true;
+        }
+        finally
+        {
+            Guardando = false;
+        }
+    }
+
+    private void Volver() => Nav.NavigateTo("/modulos/licencias");
+}

@@ -1,0 +1,970 @@
+/* ============================================================
+   Terminal Authority theme — design tokens from the Stitch PRD
+   "Gestión de Dirección de Tránsito" (vector_command/DESIGN.md)
+   ============================================================ */
+:root {
+    color-scheme: dark;
+
+    --ta-surface:                   #0b1326;
+    --ta-surface-container-lowest:  #060e20;
+    --ta-surface-container-low:     #131b2e;
+    --ta-surface-container:         #171f33;
+    --ta-surface-container-high:    #222a3d;
+    --ta-surface-container-highest: #2d3449;
+    --ta-surface-bright:            #31394d;
+    --ta-on-surface:                #dae2fd;
+    --ta-on-surface-variant:        #c4c5d9;
+    --ta-outline:                   #8e90a2;
+    --ta-outline-variant:           #434656;
+    --ta-primary:                   #adc6ff;
+    --ta-primary-container:         #0e69dc;
+    --ta-on-primary:                #002e6a;
+    --ta-secondary:                 #4edea3;
+    --ta-secondary-container:       #00a572;
+    --ta-on-secondary:              #003824;
+    --ta-tertiary:                  #ffb95f;
+    --ta-danger:                    #ff7a6e;
+
+    /* Legacy aliases kept so existing markup keeps working */
+    --f8-header-bg:     var(--ta-surface-container-high);
+    --f8-header-text:   var(--ta-on-surface);
+    --f8-border:        var(--ta-outline-variant);
+}
+
+html, body {
+    font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: var(--ta-surface);
+    color: var(--ta-on-surface);
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    color: var(--ta-on-surface);
+}
+
+a, .btn-link {
+    color: var(--ta-primary);
+}
+
+.btn-primary {
+    color: var(--ta-on-primary);
+    background: linear-gradient(135deg, var(--ta-primary), var(--ta-primary-container));
+    border: none;
+    border-radius: 2px;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.15rem rgba(78, 222, 163, .4);
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+h1:focus {
+    outline: none;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid var(--ta-secondary);
+}
+
+.invalid {
+    outline: 1px solid var(--ta-danger);
+}
+
+.validation-message {
+    color: var(--ta-danger);
+}
+
+.blazor-error-boundary {
+    background: #b32121;
+    padding: 1rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+/* ============================================================
+   Scrollbars — thin, recessed, terminal style
+   ============================================================ */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--ta-surface-bright) var(--ta-surface-container-lowest);
+}
+
+/* ============================================================
+   Module pages — layout
+   ============================================================ */
+.f8-wrapper {
+    padding: 0 1rem 2rem;
+    max-width: 1840px;
+    margin: 0 auto;
+}
+
+.f8-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-bottom: 1rem;
+}
+
+.f8-topbar h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.f8-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+.f8-btn {
+    border: none;
+    background: var(--ta-surface-container-high);
+    color: var(--ta-on-surface);
+    padding: .45rem 1rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: .8rem;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: .03em;
+}
+
+.f8-btn:hover { background: var(--ta-surface-bright); }
+
+.f8-btn-primary {
+    background: linear-gradient(135deg, var(--ta-primary), var(--ta-primary-container));
+    color: var(--ta-on-primary);
+    font-weight: 600;
+}
+
+.f8-btn-primary:hover {
+    background: linear-gradient(135deg, #c2d5ff, #2a7ce8);
+    color: var(--ta-on-primary);
+}
+
+.f8-btn-danger {
+    background: rgba(255, 122, 110, .15);
+    color: var(--ta-danger);
+}
+
+.f8-btn-danger:hover { background: rgba(255, 122, 110, .3); }
+
+/* ============================================================
+   Stat cards
+   ============================================================ */
+.f8-stats {
+    display: flex;
+    gap: .75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.f8-stat {
+    background: var(--ta-surface-container-low);
+    border-radius: 2px;
+    padding: .5rem 1rem;
+    font-size: .68rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ta-on-surface-variant);
+    min-width: 110px;
+}
+
+.f8-stat strong {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.4rem;
+    display: block;
+    color: var(--ta-on-surface);
+}
+
+.f8-stat.ta-stat-ok strong    { color: var(--ta-secondary); }
+.f8-stat.ta-stat-warn strong  { color: var(--ta-tertiary); }
+.f8-stat.ta-stat-bad strong   { color: var(--ta-danger); }
+
+/* ============================================================
+   Filters — bottom-stroke inputs, no borders
+   ============================================================ */
+.f8-filters {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.f8-filters input, .f8-filters select {
+    background: var(--ta-surface-container-lowest);
+    border: none;
+    border-bottom: 2px solid var(--ta-outline);
+    border-radius: 2px 2px 0 0;
+    padding: .45rem .7rem;
+    font-size: .82rem;
+    color: var(--ta-on-surface);
+}
+
+.f8-filters input:focus, .f8-filters select:focus {
+    outline: none;
+    border-bottom-color: var(--ta-secondary);
+}
+
+.f8-filters input { min-width: 300px; }
+
+.f8-filters input::placeholder { color: var(--ta-outline); }
+
+/* ============================================================
+   Data table — layered surfaces, striped rows, no dividers
+   ============================================================ */
+.f8-scroll {
+    max-height: 65vh;
+    overflow: auto;
+    background: var(--ta-surface-container-low);
+    border: none;
+}
+
+.f8-table {
+    border-collapse: collapse;
+    width: max-content;
+    min-width: 100%;
+    font-size: .76rem;
+}
+
+.f8-table thead th {
+    position: sticky;
+    top: 0;
+    background: var(--ta-surface-container-high);
+    color: var(--ta-on-surface);
+    padding: .55rem .7rem;
+    text-align: left;
+    white-space: nowrap;
+    border: none;
+    z-index: 2;
+    font-size: .84rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+/* Two stacked sticky header rows: section groups + column names */
+.f8-table thead tr.ta-grupos th {
+    top: 0;
+    height: 30px;
+    padding: .3rem .7rem;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-align: center;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.f8-table thead tr.ta-cols th { top: 30px; }
+
+.f8-table tbody td {
+    border: none;
+    padding: .25rem .45rem;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.f8-table tbody tr:nth-child(odd)  td { background: var(--ta-surface-container-low); }
+.f8-table tbody tr:nth-child(even) td { background: var(--ta-surface-container); }
+.f8-table tbody tr:hover td { background: var(--ta-surface-bright); }
+
+/* Deleted rows */
+tr.f8-eliminado td { background: #4E333E !important; }
+
+/* ============================================================
+   ESTADO DE LA CARPETA — one distinct color per state.
+   Index follows Catalogos.EstadosCarpeta order. Colors are
+   solid (pre-blended over the surface) so the frozen columns
+   stay opaque while scrolling.
+   ============================================================ */
+tr.ec-0  td { background: #265953 !important; }  /* 1° LICENCIA — verde */
+tr.ec-1  td { background: #5F5A3E !important; }  /* SUBIDA A CONASET — amarillo */
+tr.ec-2  td { background: #2A4471 !important; }  /* SUBIDA CON F8 — azul */
+tr.ec-3  td { background: #3F3A71 !important; }  /* CAMBIO DOM. SUBIDO A CONASET — violeta */
+tr.ec-4  td { background: #5F3965 !important; }  /* CAMBIO DOM. SUBIDO CON CORREO — rosa */
+tr.ec-5  td { background: #265666 !important; }  /* SUBIDA CON OFICIO — cian */
+tr.ec-6  td { background: #3A4053 !important; }  /* SE ENCUENTRA EN ARCHIVOS — gris */
+tr.ec-7  td { background: #4D4841 !important; }  /* SE ENCUENTRA EN OF.43 — tostado */
+tr.ec-8  td { background: #5F4E3E !important; }  /* CAMBIO DE DOMICILIO SOLICITADO — ámbar */
+tr.ec-9  td { background: #5F4532 !important; }  /* CAMBIO DE DOMICILIO — naranja */
+tr.ec-10 td { background: #5F3942 !important; }  /* NO EXISTE CARPETA — rojo */
+tr.ec-11 td { background: #445271 !important; }  /* CREAR OFICIO — celeste */
+tr.ec-12 td { background: #34646A !important; }  /* CANJE LIC. EXTRANJERA — teal */
+
+tr.ec-0  td:first-child { box-shadow: inset 4px 0 0 #4edea3; }
+tr.ec-1  td:first-child { box-shadow: inset 4px 0 0 #adc6ff; }
+tr.ec-2  td:first-child { box-shadow: inset 4px 0 0 #5b9bff; }
+tr.ec-3  td:first-child { box-shadow: inset 4px 0 0 #9d7bff; }
+tr.ec-4  td:first-child { box-shadow: inset 4px 0 0 #ff7ad9; }
+tr.ec-5  td:first-child { box-shadow: inset 4px 0 0 #4ed4de; }
+tr.ec-6  td:first-child { box-shadow: inset 4px 0 0 #8e90a2; }
+tr.ec-7  td:first-child { box-shadow: inset 4px 0 0 #c9a86a; }
+tr.ec-8  td:first-child { box-shadow: inset 4px 0 0 #ffb95f; }
+tr.ec-9  td:first-child { box-shadow: inset 4px 0 0 #ff9d3c; }
+tr.ec-10 td:first-child { box-shadow: inset 4px 0 0 #ff7a6e; }
+tr.ec-11 td:first-child { box-shadow: inset 4px 0 0 #ffe05f; }
+tr.ec-12 td:first-child { box-shadow: inset 4px 0 0 #7bffea; }
+
+/* The ESTADO DE LA CARPETA select itself takes the state color */
+select.ta-estado.ec-0  { color: #4edea3; font-weight: 700; }
+select.ta-estado.ec-1  { color: #ffe05f; font-weight: 700; }
+select.ta-estado.ec-2  { color: #5b9bff; font-weight: 700; }
+select.ta-estado.ec-3  { color: #9d7bff; font-weight: 700; }
+select.ta-estado.ec-4  { color: #ff7ad9; font-weight: 700; }
+select.ta-estado.ec-5  { color: #4ed4de; font-weight: 700; }
+select.ta-estado.ec-6  { color: #b9bbcc; font-weight: 700; }
+select.ta-estado.ec-7  { color: #c9a86a; font-weight: 700; }
+select.ta-estado.ec-8  { color: #ffb95f; font-weight: 700; }
+select.ta-estado.ec-9  { color: #ff9d3c; font-weight: 700; }
+select.ta-estado.ec-10 { color: #ff7a6e; font-weight: 700; }
+select.ta-estado.ec-11 { color: #adc6ff; font-weight: 700; }
+select.ta-estado.ec-12 { color: #7bffea; font-weight: 700; }
+
+/* ============================================================
+   Column section groups — colored group headers + separators
+   ============================================================ */
+th.grp-contrib     { background: rgba(173, 198, 255, .18) !important; color: #adc6ff !important; box-shadow: inset 0 -2px 0 #adc6ff; }
+th.grp-carpeta     { background: rgba(78, 222, 163, .15) !important;  color: #4edea3 !important; box-shadow: inset 0 -2px 0 #4edea3; }
+th.grp-idoneidad   { background: rgba(255, 224, 95, .14) !important;  color: #ffe05f !important; box-shadow: inset 0 -2px 0 #ffe05f; }
+th.grp-domicilio   { background: rgba(255, 122, 217, .15) !important; color: #ff7ad9 !important; box-shadow: inset 0 -2px 0 #ff7ad9; }
+th.grp-f8          { background: rgba(78, 212, 222, .15) !important;  color: #4ed4de !important; box-shadow: inset 0 -2px 0 #4ed4de; }
+th.grp-otorg       { background: rgba(255, 185, 95, .15) !important;  color: #ffb95f !important; box-shadow: inset 0 -2px 0 #ffb95f; }
+th.grp-pam         { background: rgba(157, 123, 255, .15) !important; color: #9d7bff !important; box-shadow: inset 0 -2px 0 #9d7bff; }
+th.grp-personales  { background: rgba(255, 224, 95, .13) !important;  color: #ffe05f !important; box-shadow: inset 0 -2px 0 #ffe05f; }
+th.grp-acciones    { background: rgba(142, 144, 162, .15) !important; color: #c4c5d9 !important; box-shadow: inset 0 -2px 0 #8e90a2; }
+
+/* Vertical separators marking where each section starts (header + body) */
+.f8-table th.sep-carpeta,    .f8-table td.sep-carpeta    { border-left: 2px solid rgba(78, 222, 163, .55) !important; }
+.f8-table th.sep-idoneidad,  .f8-table td.sep-idoneidad  { border-left: 2px solid rgba(255, 224, 95, .5) !important; }
+.f8-table th.sep-domicilio,  .f8-table td.sep-domicilio  { border-left: 2px solid rgba(255, 122, 217, .55) !important; }
+.f8-table th.sep-f8,         .f8-table td.sep-f8         { border-left: 2px solid rgba(78, 212, 222, .55) !important; }
+.f8-table th.sep-otorg,      .f8-table td.sep-otorg      { border-left: 2px solid rgba(255, 185, 95, .55) !important; }
+.f8-table th.sep-pam,        .f8-table td.sep-pam        { border-left: 2px solid rgba(157, 123, 255, .55) !important; }
+.f8-table th.sep-personales, .f8-table td.sep-personales { border-left: 2px solid rgba(255, 224, 95, .5) !important; }
+.f8-table th.sep-acciones,   .f8-table td.sep-acciones   { border-left: 2px solid rgba(142, 144, 162, .5) !important; }
+
+.f8-dup { color: var(--ta-tertiary); font-weight: 700; }
+
+/* ============================================================
+   Inline cell editors — the living spreadsheet
+   ============================================================ */
+.ta-cell {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    color: var(--ta-on-surface);
+    font-size: .76rem;
+    font-family: 'Inter', sans-serif;
+    padding: .25rem .3rem;
+    width: 100%;
+}
+
+.ta-cell:hover {
+    background: var(--ta-surface-container-lowest);
+}
+
+.ta-cell:focus {
+    outline: none;
+    background: var(--ta-surface-container-lowest);
+    border-bottom-color: var(--ta-secondary);
+}
+
+select.ta-cell { cursor: pointer; }
+select.ta-cell option { background: var(--ta-surface-container-high); }
+
+.ta-cell-date { min-width: 8.2rem; }
+
+.ta-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem;
+}
+
+.ta-readonly {
+    color: var(--ta-on-surface-variant);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .7rem;
+    padding: .25rem .3rem;
+    display: inline-block;
+}
+
+/* Column width hints */
+.ta-w-sm { min-width: 5.5rem; }
+.ta-w-md { min-width: 9rem; }
+.ta-w-lg { min-width: 13rem; }
+.ta-w-xl { min-width: 16rem; }
+
+/* Status-colored selects (OTORGAMIENTO and friends) */
+select.ta-cell.ta-chip-otorgado {
+    color: var(--ta-secondary);
+    font-weight: 700;
+}
+
+select.ta-cell.ta-chip-denegado {
+    color: var(--ta-tertiary);
+    font-weight: 700;
+}
+
+select.ta-cell.ta-chip-espera {
+    color: var(--ta-tertiary);
+    animation: ta-pulse-soft 2.2s infinite;
+}
+
+select.ta-cell.ta-chip-ssgl { color: var(--ta-outline); }
+
+@keyframes ta-pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .55; }
+}
+
+/* ============================================================
+   Pagination
+   ============================================================ */
+.f8-pag {
+    display: flex;
+    gap: .25rem;
+    margin-top: .9rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.f8-pag button {
+    border: none;
+    background: var(--ta-surface-container-high);
+    color: var(--ta-on-surface);
+    min-width: 2rem;
+    padding: .35rem .55rem;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: .78rem;
+}
+
+.f8-pag button:hover { background: var(--ta-surface-bright); }
+
+.f8-pag button.activo {
+    background: linear-gradient(135deg, var(--ta-primary), var(--ta-primary-container));
+    color: var(--ta-on-primary);
+    font-weight: 700;
+}
+
+.f8-pag button:disabled { opacity: .35; cursor: default; }
+
+.f8-pag span { color: var(--ta-on-surface-variant); }
+
+/* ============================================================
+   Messages
+   ============================================================ */
+.f8-msg {
+    margin: .5rem 0;
+    padding: .5rem .8rem;
+    border-radius: 2px;
+    font-size: .8rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.f8-msg-ok {
+    background: rgba(0, 165, 114, .15);
+    color: var(--ta-secondary);
+}
+
+.f8-msg-error {
+    background: rgba(255, 122, 110, .12);
+    color: var(--ta-danger);
+}
+
+/* ============================================================
+   Modal — glassmorphism per the design spec
+   ============================================================ */
+.f8-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 14, 32, .65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.f8-modal {
+    background: rgba(45, 52, 73, .85);
+    backdrop-filter: blur(20px);
+    border-radius: 4px;
+    width: min(720px, 92vw);
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(6, 14, 32, 0.6);
+}
+
+.f8-modal-header {
+    background: var(--ta-surface-container-highest);
+    color: var(--ta-on-surface);
+    padding: .7rem 1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    letter-spacing: .05em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.f8-modal-header button {
+    background: transparent;
+    border: none;
+    color: var(--ta-on-surface);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.f8-modal-body { padding: 1rem; color: var(--ta-on-surface-variant); }
+
+.f8-modal-body textarea {
+    width: 100%;
+    min-height: 220px;
+    background: var(--ta-surface-container-lowest);
+    border: none;
+    border-bottom: 2px solid var(--ta-outline);
+    border-radius: 2px 2px 0 0;
+    padding: .6rem;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: .75rem;
+    color: var(--ta-on-surface);
+}
+
+.f8-modal-body textarea:focus {
+    outline: none;
+    border-bottom-color: var(--ta-secondary);
+}
+
+.f8-modal-footer {
+    padding: .6rem 1rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+}
+
+/* ============================================================
+   Forms — recessed surface cards, no borders
+   ============================================================ */
+.f8-form { max-width: 1100px; }
+
+.f8-form fieldset {
+    border: none;
+    background: var(--ta-surface-container-low);
+    border-radius: 4px;
+    padding: 1rem 1.2rem 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.f8-form legend {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ta-primary);
+    padding: 0;
+    float: none;
+    width: auto;
+    margin-bottom: .6rem;
+}
+
+.f8-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: .85rem;
+}
+
+.f8-field label {
+    display: block;
+    font-size: .62rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: .25rem;
+    color: var(--ta-on-surface-variant);
+}
+
+.f8-field input, .f8-field select {
+    width: 100%;
+    background: var(--ta-surface-container-lowest);
+    border: none;
+    border-bottom: 2px solid var(--ta-outline);
+    border-radius: 2px 2px 0 0;
+    padding: .45rem .6rem;
+    font-size: .85rem;
+    color: var(--ta-on-surface);
+}
+
+.f8-field input:focus, .f8-field select:focus {
+    outline: none;
+    border-bottom-color: var(--ta-secondary);
+}
+
+.f8-field input[readonly] {
+    background: var(--ta-surface-container);
+    border-bottom-color: var(--ta-outline-variant);
+    color: var(--ta-on-surface-variant);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* ============================================================
+   Home dashboard
+   ============================================================ */
+.home-hero { max-width: 1000px; padding: 1.5rem 0; }
+
+.home-hero h1 {
+    font-size: 1.6rem;
+    margin-bottom: .4rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.home-hero p { color: var(--ta-on-surface-variant); max-width: 640px; }
+
+.home-hero .btn {
+    margin-top: .5rem;
+    background: linear-gradient(135deg, var(--ta-primary), var(--ta-primary-container));
+    border: none;
+    border-radius: 2px;
+    color: var(--ta-on-primary);
+    font-weight: 600;
+}
+
+.ta-dash-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: .9rem;
+    margin: 1.5rem 0;
+}
+
+.ta-dash-card {
+    background: var(--ta-surface-container-low);
+    border-radius: 4px;
+    padding: 1rem 1.2rem;
+}
+
+.ta-dash-card .ta-dash-label {
+    font-size: .64rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ta-on-surface-variant);
+}
+
+.ta-dash-card .ta-dash-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.ta-dash-card.ok    .ta-dash-value { color: var(--ta-secondary); }
+.ta-dash-card.warn  .ta-dash-value { color: var(--ta-tertiary); }
+.ta-dash-card.bad   .ta-dash-value { color: var(--ta-danger); }
+
+/* ============================================================
+   Statistics page
+   ============================================================ */
+.ta-charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 1rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.ta-chart-card {
+    background: var(--ta-surface-container-low);
+    border-radius: 4px;
+    padding: 1.1rem 1.3rem 1.3rem;
+}
+
+.ta-chart-card h3 {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--ta-on-surface-variant);
+    margin-bottom: .9rem;
+}
+
+.ta-chart-card canvas { max-height: 280px; }
+
+.ta-chart-empty {
+    color: var(--ta-outline);
+    font-size: .78rem;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 2.5rem 1rem;
+    text-align: center;
+}
+
+/* PDF option buttons inside the modal */
+.ta-pdf-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .8rem;
+    margin-top: .6rem;
+}
+
+.ta-pdf-option {
+    background: var(--ta-surface-container-high);
+    border: none;
+    border-radius: 3px;
+    color: var(--ta-on-surface);
+    padding: 1.1rem .8rem;
+    cursor: pointer;
+    text-align: center;
+}
+
+.ta-pdf-option:hover { background: var(--ta-surface-bright); }
+
+.ta-pdf-option strong {
+    display: block;
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: .06em;
+    margin-bottom: .25rem;
+    color: var(--ta-primary);
+}
+
+.ta-pdf-option span {
+    font-size: .7rem;
+    color: var(--ta-on-surface-variant);
+}
+
+/* ============================================================
+   Cell alignment: choosers centered, free text right-aligned
+   ============================================================ */
+.f8-table th, .f8-table td { box-sizing: border-box; }
+
+.f8-table select.ta-cell {
+    text-align: center;
+    text-align-last: center;
+}
+
+.f8-table input.ta-cell:not([type="date"]) { text-align: right; }
+.f8-table input.ta-cell-date { text-align: center; }
+.f8-table td.ta-center { text-align: center; }
+
+/* SI/NO and APROBADA/REPROBADA chips */
+select.ta-cell.ta-si {
+    color: #4edea3;
+    font-weight: 700;
+    background: rgba(78, 222, 163, .12);
+    border-radius: 3px;
+}
+
+select.ta-cell.ta-no {
+    color: #ff7a6e;
+    font-weight: 700;
+    background: rgba(255, 122, 110, .12);
+    border-radius: 3px;
+}
+
+/* +56 phone prefix hint */
+.ta-tel-wrap { display: flex; align-items: center; gap: .15rem; }
+.ta-tel-wrap .ta-tel-prefix {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .68rem;
+    color: var(--ta-on-surface-variant);
+}
+
+/* ============================================================
+   Frozen identity columns (NOMBRE COMPLETO + RUT)
+   ============================================================ */
+.f8-table th.ta-fix1, .f8-table td.ta-fix1 {
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    width: 250px;
+    min-width: 250px;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.f8-table th.ta-fix2, .f8-table td.ta-fix2 {
+    position: sticky;
+    left: 250px;
+    z-index: 3;
+    width: 175px;
+    min-width: 175px;
+    max-width: 175px;
+    box-shadow: inset -3px 0 0 rgba(67, 70, 86, .9);
+}
+
+.f8-table thead th.ta-fix1, .f8-table thead th.ta-fix2 { z-index: 6; }
+
+.f8-table tbody td.ta-fix1, .f8-table tbody td.ta-fix2 {
+    background-color: var(--ta-surface-container-low);
+}
+
+.f8-table tbody tr:nth-child(even) td.ta-fix1,
+.f8-table tbody tr:nth-child(even) td.ta-fix2 {
+    background-color: var(--ta-surface-container);
+}
+
+/* ============================================================
+   Seguimiento en tiempo real — the license highway
+   ============================================================ */
+.ta-roads {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+.ta-road-card {
+    background: var(--ta-surface-container-low);
+    border-radius: 4px;
+    padding: 1rem 1.6rem 1.8rem;
+}
+
+.ta-road-head {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.ta-road-head strong {
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: .04em;
+    font-size: .95rem;
+}
+
+.ta-road-status {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .7rem;
+    letter-spacing: .06em;
+    color: var(--ta-tertiary);
+    animation: ta-pulse-soft 2.2s infinite;
+}
+
+.ta-road-status.ok {
+    color: var(--ta-secondary);
+    animation: none;
+}
+
+.ta-road {
+    position: relative;
+    height: 92px;
+    margin: 0 30px;
+}
+
+.ta-road-line {
+    position: absolute;
+    left: -14px;
+    right: -14px;
+    top: 30px;
+    height: 16px;
+    background: #3a4053;
+    border-radius: 8px;
+}
+
+.ta-road-line::after {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 7px;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, rgba(255,255,255,.4) 0 12px, transparent 12px 26px);
+}
+
+.ta-road-fill {
+    position: absolute;
+    left: -14px;
+    top: 30px;
+    height: 16px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, rgba(78, 222, 163, .55), rgba(78, 222, 163, .15));
+    transition: width .6s ease;
+}
+
+.ta-road-stop {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.ta-road-stop .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ta-outline-variant);
+    margin-top: 33px;
+}
+
+.ta-road-stop.done .dot {
+    background: var(--ta-secondary);
+    box-shadow: 0 0 8px rgba(78, 222, 163, .8);
+}
+
+.ta-road-stop .lbl {
+    font-size: .56rem;
+    letter-spacing: .08em;
+    color: var(--ta-on-surface-variant);
+    margin-top: 12px;
+    white-space: nowrap;
+}
+
+.ta-road-stop.done .lbl { color: var(--ta-secondary); }
+
+.ta-road-car {
+    position: absolute;
+    top: 4px;
+    transform: translateX(-50%);
+    font-size: 26px;
+    transition: left .6s ease;
+    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5));
+}
+
+/* Email domains modal */
+.ta-domain-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .35rem .6rem;
+    background: var(--ta-surface-container-lowest);
+    border-radius: 3px;
+    margin-bottom: .3rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .78rem;
+}
+
+.ta-domain-row button {
+    background: transparent;
+    border: none;
+    color: var(--ta-danger);
+    cursor: pointer;
+    font-size: .9rem;
+}
+
+.ta-domain-add {
+    display: flex;
+    gap: .5rem;
+    margin-top: .8rem;
+}
+
+.ta-domain-add input {
+    flex: 1;
+    background: var(--ta-surface-container-lowest);
+    border: none;
+    border-bottom: 2px solid var(--ta-outline);
+    border-radius: 2px 2px 0 0;
+    padding: .45rem .6rem;
+    color: var(--ta-on-surface);
+    font-size: .82rem;
+}
+
+.ta-domain-add input:focus { outline: none; border-bottom-color: var(--ta-secondary); }

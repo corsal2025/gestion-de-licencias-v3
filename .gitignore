@@ -1,0 +1,20 @@
+# Build output
+bin/
+obj/
+publish/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# SQLite database — contains real personal data (RUTs), never commit
+*.db
+*.db-shm
+*.db-wal
+
+# Logs and temp
+*.log
+.atl/

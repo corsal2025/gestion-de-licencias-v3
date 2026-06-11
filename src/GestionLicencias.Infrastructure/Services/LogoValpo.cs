@@ -1,0 +1,29 @@
+namespace GestionLicencias.Infrastructure.Services;
+
+/// <summary>
+/// Vector version of the Municipalidad de Valparaíso logo, embedded
+/// so PDF reports can render it without filesystem dependencies.
+/// Kept in sync with wwwroot/logo-valpo.svg.
+/// </summary>
+public static class LogoValpo
+{
+    public const string Svg = """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 430">
+  <g stroke="#2a4ba0" stroke-width="12" stroke-linejoin="round">
+    <rect x="26" y="26" width="168" height="378" fill="#aadcec"/>
+    <polygon points="194,70 194,206 64,206" fill="#34b773"/>
+    <rect x="26" y="146" width="92" height="120" fill="#e84f4f"/>
+    <polygon points="118,206 194,206 118,286" fill="#f2a9d4"/>
+    <rect x="26" y="266" width="168" height="74" fill="#34b773"/>
+    <rect x="26" y="340" width="168" height="64" fill="#7fd9cd"/>
+  </g>
+  <circle cx="78" cy="86" r="26" fill="#ffd23f" stroke="#2a4ba0" stroke-width="10"/>
+  <rect x="56" y="196" width="26" height="26" fill="#ffd23f" stroke="#2a4ba0" stroke-width="8"/>
+  <path d="M40 372 q21 -18 42 0 t42 0 t42 0" fill="none" stroke="#2a4ba0" stroke-width="10" stroke-linecap="round"/>
+  <text x="218" y="64" font-family="Arial, sans-serif" font-weight="bold" font-size="34" fill="#2a4ba0" letter-spacing="2">MUNICIPALIDAD</text>
+  <text x="214" y="170" font-family="Arial, sans-serif" font-weight="800" font-size="110" fill="#2a4ba0">VAL</text>
+  <text x="214" y="285" font-family="Arial, sans-serif" font-weight="800" font-size="110" fill="#2a4ba0">PARA</text>
+  <text x="214" y="400" font-family="Arial, sans-serif" font-weight="800" font-size="110" fill="#2a4ba0">ÍSO</text>
+</svg>
+""";
+}

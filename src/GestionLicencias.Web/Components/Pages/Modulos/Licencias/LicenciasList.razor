@@ -1,0 +1,881 @@
+@page "/modulos/licencias"
+@rendermode InteractiveServer
+@using System.Globalization
+@inject ITramiteService<TramiteLicencia> ModuloService
+@inject TramiteLicenciaService StatsService
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<PageTitle>Gestionador de Licencias</PageTitle>
+
+<div class="f8-wrapper">
+    <div class="f8-topbar">
+        <h2>Gestionador de Licencias</h2>
+        <div class="f8-actions">
+            <button class="f8-btn" @onclick="ExportarXls">Exportar Excel</button>
+            <button class="f8-btn" @onclick="AbrirPdf">Descargar PDF</button>
+            <button class="f8-btn" @onclick="AbrirPegado">Pegar desde Excel</button>
+            <button class="f8-btn" @onclick="AbrirDominios">Correos</button>
+            <button class="f8-btn" @onclick="IrSeguimiento">Seguimiento</button>
+            <button class="f8-btn" @onclick="IrEstadisticas">Estadísticas</button>
+            <button class="f8-btn f8-btn-primary" @onclick="Nuevo">Nuevo registro</button>
+        </div>
+    </div>
+
+    @if (Estadisticas.Count > 0)
+    {
+        <div class="f8-stats">
+            <div class="f8-stat"><strong>@TotalResultados</strong> Total</div>
+            @foreach (var kv in Estadisticas.OrderByDescending(k => k.Value))
+            {
+                <div class="f8-stat @ClaseStat(kv.Key)"><strong>@kv.Value</strong> @kv.Key</div>
+            }
+        </div>
+    }
+
+    <div class="f8-filters">
+        <input placeholder="Buscar por RUT, nombre, apellido o correo..."
+               @bind="FiltroTermino" @onkeyup="OnKeyUp" />
+        <select @bind="FiltroOtorgamiento">
+            <option value="">— OTORGAMIENTO —</option>
+            @foreach (var o in Catalogos.Otorgamientos)
+            {
+                <option value="@o">@o</option>
+            }
+        </select>
+        <select @bind="FiltroEstadoCarpeta">
+            <option value="">— ESTADO DE LA CARPETA —</option>
+            @foreach (var e in Catalogos.EstadosCarpeta)
+            {
+                <option value="@e">@e</option>
+            }
+        </select>
+        <button class="f8-btn f8-btn-primary" @onclick="BuscarClick">Buscar</button>
+        <button class="f8-btn" @onclick="Limpiar">Limpiar</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Mensaje))
+    {
+        <div class="f8-msg @(EsError ? "f8-msg-error" : "f8-msg-ok")">@Mensaje</div>
+    }
+
+    @if (Cargando)
+    {
+        <p>Cargando...</p>
+    }
+    else if (Registros.Count == 0)
+    {
+        <p>No hay registros.</p>
+    }
+    else
+    {
+        <div class="f8-scroll">
+            <table class="f8-table">
+                <thead>
+                    <tr class="ta-grupos">
+                        <th colspan="11" class="grp-contrib">DATOS PERSONALES CONTRIBUYENTE Y CITACIÓN</th>
+                        <th colspan="3" class="grp-carpeta sep-carpeta">CARPETA</th>
+                        <th colspan="3" class="grp-idoneidad sep-idoneidad">IDEONIDAD MORAL</th>
+                        <th colspan="3" class="grp-domicilio sep-domicilio">CAMBIO DE DOMICILIO</th>
+                        <th colspan="3" class="grp-f8 sep-f8">F8</th>
+                        <th colspan="4" class="grp-otorg sep-otorg">OTORGAMIENTO E IMPRESIÓN</th>
+                        <th colspan="6" class="grp-pam sep-pam">PAM Y ENTREGA</th>
+                        <th class="grp-acciones sep-acciones"></th>
+                    </tr>
+                    <tr class="ta-cols">
+                        <th class="ta-fix1">NOMBRE COMPLETO</th>
+                        <th class="ta-fix2">RUT</th>
+                        <th>SEXO</th>
+                        <th>FECHA DE NACIMIENTO</th>
+                        <th>EDAD</th>
+                        <th>TIPO DE LICENCIA</th>
+                        <th>FECHA DE LA CITACIÓN</th>
+                        <th>TEFEFONO</th>
+                        <th>CORREO ELECRTRONICO</th>
+                        <th>LUGAR DE ATENCIÓN</th>
+                        <th>ASISTE</th>
+                        <th class="sep-carpeta">FECHA ULTIMA CARPETA</th>
+                        <th>ESTADO DE LA CARPETA</th>
+                        <th>FECHA DIGITALIZACION CARPETA</th>
+                        <th class="sep-idoneidad">IDEONIDAD MORAL</th>
+                        <th>CONTACTADO</th>
+                        <th>NOTIFICADO</th>
+                        <th class="sep-domicilio">LUGAR DE ORIGEN CAMBIO DOMICILIO</th>
+                        <th>PETICION DE CAMBIO DOMICILIO</th>
+                        <th>CAMBIO DOMICILIO PEDIDO POR</th>
+                        <th class="sep-f8">FOLIO (F8)</th>
+                        <th>FECHA PENULTIMA CARPETA</th>
+                        <th>ESTADO DEL F8</th>
+                        <th class="sep-otorg">OTORGAMIENTO</th>
+                        <th>FOLIO LICENCIA</th>
+                        <th>FECHA IMPRESION</th>
+                        <th>IMPRESA POR</th>
+                        <th class="sep-pam">BAJADA A PAM</th>
+                        <th>BAJADA POR</th>
+                        <th>FECHA RECEPCION PAM</th>
+                        <th>RECIBIDA EN PAM POR</th>
+                        <th>CONTACTADO CONTRIBUYENTE PARA ENTREGA</th>
+                        <th>FECHA DE ENTREGA</th>
+                        <th class="sep-acciones">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Registros)
+                    {
+                        <tr class="@ClaseFila(r)">
+                            <td class="ta-fix1"><span class="ta-readonly">@r.NombreCompleto</span></td>
+                            <td class="ta-fix2">
+                                <input class="ta-cell ta-mono @(RutsDuplicados.Contains(r.RUT) ? "f8-dup" : "")"
+                                       style="width:130px;min-width:130px;"
+                                       @bind="r.RUT" @bind:after="() => GuardarFila(r)" />
+                                @if (RutsDuplicados.Contains(r.RUT))
+                                {
+                                    <span class="f8-dup">⚠</span>
+                                }
+                            </td>
+                            <td>
+                                <select class="ta-cell ta-w-md" @bind="r.Sexo" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.Sexos)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input type="date" class="ta-cell ta-cell-date" @bind="r.FechaNacimiento" @bind:after="() => GuardarFila(r)" /></td>
+                            <td class="ta-center"><span class="ta-readonly">@(r.Edad?.ToString() ?? "—")</span></td>
+                            <td>
+                                <select class="ta-cell ta-w-sm" @bind="r.TipoLicencia" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.TiposLicencia)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input type="date" class="ta-cell ta-cell-date" @bind="r.FechaCitacion" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input class="ta-cell ta-w-md" placeholder="+56 9..." @bind="r.Telefono" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input class="ta-cell ta-w-md ta-email" list="ta-email-dl" @bind="r.Email" @bind:after="() => GuardarFila(r)" /></td>
+                            <td>
+                                <select class="ta-cell ta-w-md" @bind="r.LugarAtencion" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.LugaresAtencion)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.Asiste)" @bind="r.Asiste" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.SiNo)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td class="sep-carpeta"><input type="date" class="ta-cell ta-cell-date" @bind="r.FechaUltimaCarpeta" @bind:after="() => GuardarFila(r)" /></td>
+                            <td>
+                                <select class="ta-cell ta-w-lg ta-estado @ClaseEstado(r.EstadoCarpeta)" @bind="r.EstadoCarpeta" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.EstadosCarpeta)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input type="date" class="ta-cell ta-cell-date" @bind="r.FechaDigitalizacionCarpeta" @bind:after="() => GuardarFila(r)" /></td>
+                            <td class="sep-idoneidad">
+                                <select class="ta-cell ta-w-md @ClaseAprobada(r.IdoneidadMoral)" @bind="r.IdoneidadMoral" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.IdoneidadMoral)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.Contactado)" @bind="r.Contactado" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.SiNo)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.Notificado)" @bind="r.Notificado" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.SiNo)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td class="sep-domicilio"><input class="ta-cell ta-w-md" @bind="r.LugarOrigenCambioDomicilio" @bind:after="() => GuardarFila(r)" /></td>
+                            <td>
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.PeticionCambioDomicilio)" @bind="r.PeticionCambioDomicilio" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.SiNo)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <select class="ta-cell ta-w-md" @bind="r.CambioDomicilioPedidoPor" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.CambioDomicilioPedidoPor)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td class="sep-f8"><input class="ta-cell ta-mono ta-w-sm" @bind="r.FolioF8" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" @bind="r.FechaPenultimaCarpeta" @bind:after="() => GuardarFila(r)" /></td>
+                            <td>
+                                <select class="ta-cell ta-w-md" @bind="r.EstadoF8" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.EstadosF8)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td class="sep-otorg">
+                                <select class="ta-cell ta-w-md @ChipOtorgamiento(r.Otorgamiento)" @bind="r.Otorgamiento" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.Otorgamientos)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input class="ta-cell ta-mono ta-w-sm" @bind="r.FolioLicencia" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" @bind="r.FechaImpresion" @bind:after="() => GuardarFila(r)" /></td>
+                            <td>
+                                <select class="ta-cell ta-w-md" @bind="r.ImpresaPor" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.ImpresaPor)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td class="sep-pam">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.BajadaAPam)" @bind="r.BajadaAPam" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.SiNo)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input class="ta-cell ta-w-sm" @bind="r.BajadaPor" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" @bind="r.FechaRecepcionPam" @bind:after="() => GuardarFila(r)" /></td>
+                            <td>
+                                <select class="ta-cell ta-w-md" @bind="r.RecibidaEnPamPor" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.RecibidaEnPamPor)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td>
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.ContactadoParaEntrega)" @bind="r.ContactadoParaEntrega" @bind:after="() => GuardarFila(r)">
+                                    <option value="">—</option>
+                                    @foreach (var v in Catalogos.SiNo)
+                                    {
+                                        <option value="@v">@v</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input type="date" class="ta-cell ta-cell-date" @bind="r.FechaEntrega" @bind:after="() => GuardarFila(r)" /></td>
+                            <td class="sep-acciones">
+                                <button class="f8-btn" @onclick="() => Editar(r.Id)">Editar</button>
+                                <button class="f8-btn f8-btn-danger" @onclick="() => Eliminar(r.Id)">Eliminar</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="f8-pag">
+            <button disabled="@(PaginaActual <= 1)" @onclick="() => Ir(1)">«</button>
+            <button disabled="@(PaginaActual <= 1)" @onclick="() => Ir(PaginaActual - 1)">‹</button>
+            @foreach (var p in PaginasVisibles())
+            {
+                var pagina = p;
+                <button class="@(pagina == PaginaActual ? "activo" : "")" @onclick="() => Ir(pagina)">@pagina</button>
+            }
+            <button disabled="@(PaginaActual >= TotalPaginas)" @onclick="() => Ir(PaginaActual + 1)">›</button>
+            <button disabled="@(PaginaActual >= TotalPaginas)" @onclick="() => Ir(TotalPaginas)">»</button>
+            <span style="margin-left:.5rem;font-size:.8rem;">
+                @TotalResultados registros — página @PaginaActual de @TotalPaginas
+            </span>
+        </div>
+    }
+</div>
+
+@if (MostrarPegado)
+{
+    <div class="f8-modal-backdrop">
+        <div class="f8-modal">
+            <div class="f8-modal-header">
+                Pegar desde Excel
+                <button @onclick="CerrarPegado">✕</button>
+            </div>
+            <div class="f8-modal-body">
+                <p style="font-size:.8rem;">
+                    Copia las filas desde Excel o Google Sheets (con las 31 columnas del modelo
+                    original en el mismo orden; opcionalmente SEXO, FECHA DE NACIMIENTO y TIPO DE
+                    LICENCIA al final) y pégalas aquí. La fila de encabezado se ignora automáticamente.
+                </p>
+                <textarea @bind="TextoPegado" placeholder="Pega aquí las filas copiadas..."></textarea>
+            </div>
+            <div class="f8-modal-footer">
+                <button class="f8-btn" @onclick="CerrarPegado">Cancelar</button>
+                <button class="f8-btn f8-btn-primary" @onclick="ProcesarPegado">Procesar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (MostrarPdf)
+{
+    <div class="f8-modal-backdrop">
+        <div class="f8-modal">
+            <div class="f8-modal-header">
+                Descargar PDF
+                <button @onclick="CerrarPdf">✕</button>
+            </div>
+            <div class="f8-modal-body">
+                <p style="font-size:.8rem;">Elige el tipo de reporte:</p>
+                <div class="ta-pdf-options" style="grid-template-columns:1fr 1fr 1fr;">
+                    <button class="ta-pdf-option" @onclick="() => DescargarPdf(false)" disabled="@GenerandoPdf">
+                        <strong>ÚLTIMA CARPETA</strong>
+                        <span>Nombre, RUT y FECHA ULTIMA CARPETA</span>
+                    </button>
+                    <button class="ta-pdf-option" @onclick="() => DescargarPdf(true)" disabled="@GenerandoPdf">
+                        <strong>PENÚLTIMA CARPETA</strong>
+                        <span>Nombre, RUT y FECHA PENULTIMA CARPETA</span>
+                    </button>
+                    <button class="ta-pdf-option" @onclick="() => PdfImpresas = !PdfImpresas" disabled="@GenerandoPdf">
+                        <strong>IMPRESAS</strong>
+                        <span>Por lugar de atención y funcionaria</span>
+                    </button>
+                </div>
+
+                @if (PdfImpresas)
+                {
+                    <div class="f8-form-grid" style="margin-top:1rem;">
+                        <div class="f8-field">
+                            <label>LUGAR (ENCABEZADO DEL PDF)</label>
+                            <select value="@PdfLugar" @onchange="OnPdfLugarChanged">
+                                @foreach (var v in Catalogos.LugaresAtencion)
+                                {
+                                    <option value="@v">@v</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="f8-field">
+                            <label>FUNCIONARIA (IMPRESA POR)</label>
+                            <select @bind="PdfFuncionaria">
+                                <option value="">TODAS LAS DEL LUGAR</option>
+                                @foreach (var v in Catalogos.ImpresaPor)
+                                {
+                                    <option value="@v">@v</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="f8-field" style="display:flex;align-items:flex-end;">
+                            <button class="f8-btn f8-btn-primary" style="width:100%;" @onclick="DescargarImpresas" disabled="@GenerandoPdf">
+                                Generar PDF de impresas
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                @if (GenerandoPdf)
+                {
+                    <p style="font-size:.75rem;margin-top:.6rem;">Generando PDF...</p>
+                }
+            </div>
+            <div class="f8-modal-footer">
+                <button class="f8-btn" @onclick="CerrarPdf">Cancelar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@if (MostrarDominios)
+{
+    <div class="f8-modal-backdrop">
+        <div class="f8-modal">
+            <div class="f8-modal-header">
+                Dominios de correo
+                <button @onclick="() => MostrarDominios = false">✕</button>
+            </div>
+            <div class="f8-modal-body">
+                <p style="font-size:.8rem;">
+                    Estos dominios se sugieren automáticamente al escribir un correo
+                    en cualquier campo del sistema.
+                </p>
+                @foreach (var d in Dominios)
+                {
+                    <div class="ta-domain-row">
+                        <span>@@@d</span>
+                        @if (!DominiosBase.Contains(d))
+                        {
+                            <button title="Quitar dominio" @onclick="() => QuitarDominio(d)">✕</button>
+                        }
+                    </div>
+                }
+                <div class="ta-domain-add">
+                    <input placeholder="nuevodominio.cl" @bind="NuevoDominio" />
+                    <button class="f8-btn f8-btn-primary" @onclick="AgregarDominio">Agregar</button>
+                </div>
+            </div>
+            <div class="f8-modal-footer">
+                <button class="f8-btn" @onclick="() => MostrarDominios = false">Cerrar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<TramiteLicencia> Registros = new();
+    private HashSet<string> RutsDuplicados = new();
+    private Dictionary<string, int> Estadisticas = new();
+    private bool Cargando = false;
+    private string FiltroTermino = "";
+    private string FiltroOtorgamiento = "";
+    private string FiltroEstadoCarpeta = "";
+    private int PaginaActual = 1;
+    private int TotalResultados = 0;
+    private int TotalPaginas = 0;
+    private const int PageSize = 50;
+    private string Mensaje = "";
+    private bool EsError = false;
+    private bool MostrarPegado = false;
+    private bool MostrarPdf = false;
+    private bool PdfImpresas = false;
+    private bool GenerandoPdf = false;
+    private string PdfLugar = "PLACILLA";
+    private string PdfFuncionaria = "SANDRA";
+    private string TextoPegado = "";
+    private bool MostrarDominios = false;
+    private List<string> Dominios = new();
+    private string NuevoDominio = "";
+
+    private static readonly string[] DominiosBase =
+        ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com", "munivalpo.cl"];
+
+    // Default clerk per service location; PLACILLA is handled by SANDRA.
+    private static readonly Dictionary<string, string> FuncionariaPorLugar = new()
+    {
+        ["PLACILLA"] = "SANDRA",
+        ["AV. ARGENTINA"] = "",
+        ["MERCADO PUERTO"] = ""
+    };
+
+    private static readonly string[] FormatosFecha =
+        ["d/M/yyyy", "dd/MM/yyyy", "d-M-yyyy", "dd-MM-yyyy", "yyyy-MM-dd"];
+
+    protected override async Task OnInitializedAsync() => await BuscarAsync();
+
+    private async Task BuscarAsync()
+    {
+        Cargando = true;
+        StateHasChanged();
+        try
+        {
+            var (res, tot) = await ModuloService.BuscarAsync(new BusquedaFilter
+            {
+                Termino = FiltroTermino,
+                Otorgamiento = FiltroOtorgamiento,
+                EstadoCarpeta = FiltroEstadoCarpeta,
+                Pagina = PaginaActual,
+                PageSize = PageSize
+            });
+            Registros = res.ToList();
+            TotalResultados = tot;
+            TotalPaginas = Math.Max(1, (int)Math.Ceiling((double)tot / PageSize));
+            ActualizarDuplicados();
+            Estadisticas = await StatsService.ObtenerEstadisticasOtorgamientoAsync();
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error: {ex.Message}";
+            EsError = true;
+        }
+        finally
+        {
+            Cargando = false;
+        }
+    }
+
+    private void ActualizarDuplicados() =>
+        RutsDuplicados = Registros.GroupBy(r => r.RUT)
+            .Where(g => g.Count() > 1).Select(g => g.Key).ToHashSet();
+
+    private static string NormalizarTelefono(string? telefono)
+    {
+        var t = (telefono ?? "").Trim();
+        if (t.Length == 0 || t.StartsWith("+56")) return t;
+        t = t.TrimStart('+');
+        if (t.StartsWith("56") && t.Length > 9) return "+" + t;
+        return "+56 " + t;
+    }
+
+    private async Task GuardarFila(TramiteLicencia r)
+    {
+        r.Telefono = NormalizarTelefono(r.Telefono);
+
+        var (ok, msg) = ModuloService.ValidarTramite(r);
+        if (!ok)
+        {
+            Mensaje = $"No guardado: {msg}";
+            EsError = true;
+            return;
+        }
+
+        try
+        {
+            await ModuloService.ActualizarAsync(r);
+            ActualizarDuplicados();
+            Estadisticas = await StatsService.ObtenerEstadisticasOtorgamientoAsync();
+            var quien = string.IsNullOrWhiteSpace(r.NombreCompleto) ? r.RUT : r.NombreCompleto;
+            Mensaje = $"Guardado: {quien} — {DateTime.Now:HH:mm:ss}";
+            EsError = false;
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error al guardar: {ex.Message}";
+            EsError = true;
+        }
+    }
+
+    private async Task BuscarClick()
+    {
+        PaginaActual = 1;
+        await BuscarAsync();
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await BuscarClick();
+    }
+
+    private async Task Ir(int p)
+    {
+        PaginaActual = Math.Clamp(p, 1, TotalPaginas);
+        await BuscarAsync();
+    }
+
+    private async Task Limpiar()
+    {
+        FiltroTermino = FiltroOtorgamiento = FiltroEstadoCarpeta = "";
+        PaginaActual = 1;
+        Mensaje = "";
+        await BuscarAsync();
+    }
+
+    private IEnumerable<int> PaginasVisibles()
+    {
+        var desde = Math.Max(1, PaginaActual - 2);
+        var hasta = Math.Min(TotalPaginas, PaginaActual + 2);
+        for (var i = desde; i <= hasta; i++) yield return i;
+    }
+
+    private void Nuevo() => Nav.NavigateTo("/modulos/licencias/crear");
+    private void Editar(int id) => Nav.NavigateTo($"/modulos/licencias/editar/{id}");
+    private void IrEstadisticas() => Nav.NavigateTo("/modulos/licencias/estadisticas");
+    private void IrSeguimiento() => Nav.NavigateTo("/modulos/licencias/seguimiento");
+
+    private async Task Eliminar(int id)
+    {
+        var ok = await JS.InvokeAsync<bool>("confirm", "¿Eliminar este registro?");
+        if (!ok) return;
+        await ModuloService.EliminarAsync(id);
+        Mensaje = "Registro eliminado.";
+        EsError = false;
+        await BuscarAsync();
+    }
+
+    private static string ClaseFila(TramiteLicencia r)
+    {
+        if (!r.Activo) return "f8-eliminado";
+        return ClaseEstado(r.EstadoCarpeta);
+    }
+
+    private static string ClaseEstado(string? estadoCarpeta)
+    {
+        if (string.IsNullOrWhiteSpace(estadoCarpeta)) return "";
+        var idx = Array.IndexOf(Catalogos.EstadosCarpeta, estadoCarpeta);
+        return idx >= 0 ? $"ec-{idx}" : "";
+    }
+
+    private static string ClaseSiNo(string? valor) => valor switch
+    {
+        "SI" => "ta-si",
+        "NO" => "ta-no",
+        _ => ""
+    };
+
+    private static string ClaseAprobada(string? valor) => valor switch
+    {
+        "APROBADA" => "ta-si",
+        "REPROBADA" => "ta-no",
+        _ => ""
+    };
+
+    private static string ChipOtorgamiento(string? otorgamiento) => otorgamiento switch
+    {
+        "OTORGADO" => "ta-chip-otorgado",
+        "DENEGADO" => "ta-chip-denegado",
+        "ESPERA EXÁMEN" => "ta-chip-espera",
+        "S/SGL" => "ta-chip-ssgl",
+        _ => ""
+    };
+
+    private static string ClaseStat(string otorgamiento) => otorgamiento switch
+    {
+        "OTORGADO" => "ta-stat-ok",
+        "DENEGADO" => "ta-stat-bad",
+        "ESPERA EXÁMEN" => "ta-stat-warn",
+        _ => ""
+    };
+
+    private static string F(DateTime? d) => d?.ToString("dd/MM/yyyy") ?? "";
+
+    private void AbrirPdf()
+    {
+        PdfImpresas = false;
+        MostrarPdf = true;
+    }
+
+    private void CerrarPdf() => MostrarPdf = false;
+
+    private void OnPdfLugarChanged(ChangeEventArgs e)
+    {
+        PdfLugar = e.Value?.ToString() ?? "PLACILLA";
+        PdfFuncionaria = FuncionariaPorLugar.GetValueOrDefault(PdfLugar, "");
+    }
+
+    private async Task<List<TramiteLicencia>> ObtenerTodosActivos()
+    {
+        var (todos, _) = await ModuloService.BuscarAsync(new BusquedaFilter
+        {
+            Pagina = 1,
+            PageSize = 100000
+        });
+        return todos.ToList();
+    }
+
+    private async Task DescargarPdf(bool penultima)
+    {
+        GenerandoPdf = true;
+        try
+        {
+            var bytes = ReporteCarpetasPdf.Generar(await ObtenerTodosActivos(), penultima);
+            await DescargarArchivoPdf(bytes, penultima ? "reporte_penultima_carpeta.pdf" : "reporte_ultima_carpeta.pdf");
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error al generar PDF: {ex.Message}";
+            EsError = true;
+        }
+        finally
+        {
+            GenerandoPdf = false;
+        }
+    }
+
+    private async Task DescargarImpresas()
+    {
+        GenerandoPdf = true;
+        try
+        {
+            var bytes = ReporteImpresasPdf.Generar(await ObtenerTodosActivos(), PdfLugar, PdfFuncionaria);
+            var lugarSlug = PdfLugar.ToLowerInvariant().Replace(" ", "_").Replace(".", "");
+            await DescargarArchivoPdf(bytes, $"reporte_impresas_{lugarSlug}.pdf");
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error al generar PDF: {ex.Message}";
+            EsError = true;
+        }
+        finally
+        {
+            GenerandoPdf = false;
+        }
+    }
+
+    private async Task DescargarArchivoPdf(byte[] bytes, string nombre)
+    {
+        var b64 = Convert.ToBase64String(bytes);
+        await JS.InvokeVoidAsync("eval",
+            $"var a=document.createElement('a');a.href='data:application/pdf;base64,{b64}';" +
+            $"a.download='{nombre}';a.click()");
+        MostrarPdf = false;
+        Mensaje = $"PDF generado: {nombre}";
+        EsError = false;
+    }
+
+    private async Task AbrirDominios()
+    {
+        Dominios = (await JS.InvokeAsync<string[]>("taEmail.getDomains")).ToList();
+        MostrarDominios = true;
+    }
+
+    private async Task AgregarDominio()
+    {
+        if (string.IsNullOrWhiteSpace(NuevoDominio)) return;
+        Dominios = (await JS.InvokeAsync<string[]>("taEmail.addDomain", NuevoDominio)).ToList();
+        NuevoDominio = "";
+    }
+
+    private async Task QuitarDominio(string dominio)
+    {
+        Dominios = (await JS.InvokeAsync<string[]>("taEmail.removeDomain", dominio)).ToList();
+    }
+
+    private void AbrirPegado()
+    {
+        TextoPegado = "";
+        MostrarPegado = true;
+    }
+
+    private void CerrarPegado() => MostrarPegado = false;
+
+    private async Task ProcesarPegado()
+    {
+        var creados = 0;
+        var errores = new List<string>();
+        var lineas = (TextoPegado ?? "").Split('\n');
+        var nro = 0;
+
+        foreach (var linea in lineas)
+        {
+            nro++;
+            var c = linea.TrimEnd('\r').Split('\t');
+            if (c.All(string.IsNullOrWhiteSpace)) continue;
+
+            var nombre = Col(c, 0);
+            if (nombre.Equals("NOMBRE", StringComparison.OrdinalIgnoreCase)) continue;
+
+            var t = new TramiteLicencia
+            {
+                Nombre = nombre,
+                Apellido = ColN(c, 1),
+                // index 2 = NOMBRE COMPLETO: computed in the entity, ignored on paste
+                RUT = Col(c, 3),
+                FechaCitacion = Fecha(Col(c, 4)),
+                Telefono = NormalizarTelefono(Col(c, 5)),
+                Email = Col(c, 6),
+                LugarAtencion = ColN(c, 7),
+                Asiste = ColN(c, 8),
+                FechaUltimaCarpeta = Fecha(Col(c, 9)),
+                EstadoCarpeta = ColN(c, 10),
+                FechaDigitalizacionCarpeta = Fecha(Col(c, 11)),
+                IdoneidadMoral = ColN(c, 12),
+                Contactado = ColN(c, 13),
+                Notificado = ColN(c, 14),
+                LugarOrigenCambioDomicilio = ColN(c, 15),
+                PeticionCambioDomicilio = ColN(c, 16),
+                CambioDomicilioPedidoPor = ColN(c, 17),
+                FolioF8 = ColN(c, 18),
+                FechaPenultimaCarpeta = Fecha(Col(c, 19)),
+                EstadoF8 = ColN(c, 20),
+                Otorgamiento = ColN(c, 21),
+                FolioLicencia = ColN(c, 22),
+                FechaImpresion = Fecha(Col(c, 23)),
+                ImpresaPor = ColN(c, 24),
+                BajadaAPam = ColN(c, 25),
+                BajadaPor = ColN(c, 26),
+                FechaRecepcionPam = Fecha(Col(c, 27)),
+                RecibidaEnPamPor = ColN(c, 28),
+                ContactadoParaEntrega = ColN(c, 29),
+                FechaEntrega = Fecha(Col(c, 30)),
+                Sexo = ColN(c, 31),
+                FechaNacimiento = Fecha(Col(c, 32)),
+                TipoLicencia = ColN(c, 33),
+                UsuarioId = "SISTEMA",
+                TipoModulo = "TramiteLicencia"
+            };
+
+            var (ok, msg) = ModuloService.ValidarTramite(t);
+            if (!ok)
+            {
+                errores.Add($"Línea {nro}: {msg}");
+                continue;
+            }
+
+            await ModuloService.CrearAsync(t);
+            creados++;
+        }
+
+        MostrarPegado = false;
+        EsError = errores.Count > 0;
+        Mensaje = $"{creados} registro(s) creados."
+            + (errores.Count > 0 ? $" Errores: {string.Join(" | ", errores)}" : "");
+        await BuscarAsync();
+    }
+
+    private static string Col(string[] a, int i) => i < a.Length ? a[i].Trim() : "";
+
+    private static string? ColN(string[] a, int i)
+    {
+        var v = Col(a, i);
+        return string.IsNullOrEmpty(v) ? null : v;
+    }
+
+    private static DateTime? Fecha(string valor)
+    {
+        if (string.IsNullOrWhiteSpace(valor)) return null;
+        return DateTime.TryParseExact(valor, FormatosFecha, CultureInfo.InvariantCulture,
+            DateTimeStyles.None, out var f) ? f : null;
+    }
+
+    private async Task ExportarXls()
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine("<table><tr>" +
+            "<th>NOMBRE</th><th>APELLIDO</th><th>NOMBRE COMPLETO</th><th>RUT</th>" +
+            "<th>FECHA DE LA CITACIÓN</th><th>TEFEFONO</th><th>CORREO ELECRTRONICO</th>" +
+            "<th>LUGAR DE ATENCIÓN</th><th>ASISTE</th><th>FECHA ULTIMA CARPETA</th>" +
+            "<th>ESTADO DE LA CARPETA</th><th>FECHA DIGITALIZACION CARPETA</th>" +
+            "<th>IDEONIDAD MORAL</th><th>CONTACTADO</th><th>NOTIFICADO</th>" +
+            "<th>LUGAR DE ORIGEN CAMBIO DOMICILIO</th><th>PETICION DE CAMBIO DOMICILIO</th>" +
+            "<th>CAMBIO DOMICILIO PEDIDO POR</th><th>FOLIO (F8)</th><th>FECHA PENULTIMA CARPETA</th>" +
+            "<th>ESTADO DEL F8</th><th>OTORGAMIENTO</th><th>FOLIO LICENCIA</th>" +
+            "<th>FECHA IMPRESION</th><th>IMPRESA POR</th><th>BAJADA A PAM</th><th>BAJADA POR</th>" +
+            "<th>FECHA RECEPCION PAM</th><th>RECIBIDA EN PAM POR</th>" +
+            "<th>CONTACTADO CONTRIBUYENTE PARA ENTREGA</th><th>FECHA DE ENTREGA</th>" +
+            "<th>SEXO</th><th>FECHA DE NACIMIENTO</th><th>EDAD</th><th>TIPO DE LICENCIA</th></tr>");
+        foreach (var r in Registros)
+        {
+            sb.AppendLine("<tr>" +
+                $"<td>{r.Nombre}</td><td>{r.Apellido}</td><td>{r.NombreCompleto}</td><td>{r.RUT}</td>" +
+                $"<td>{F(r.FechaCitacion)}</td><td>{r.Telefono}</td><td>{r.Email}</td>" +
+                $"<td>{r.LugarAtencion}</td><td>{r.Asiste}</td><td>{F(r.FechaUltimaCarpeta)}</td>" +
+                $"<td>{r.EstadoCarpeta}</td><td>{F(r.FechaDigitalizacionCarpeta)}</td>" +
+                $"<td>{r.IdoneidadMoral}</td><td>{r.Contactado}</td><td>{r.Notificado}</td>" +
+                $"<td>{r.LugarOrigenCambioDomicilio}</td><td>{r.PeticionCambioDomicilio}</td>" +
+                $"<td>{r.CambioDomicilioPedidoPor}</td><td>{r.FolioF8}</td><td>{F(r.FechaPenultimaCarpeta)}</td>" +
+                $"<td>{r.EstadoF8}</td><td>{r.Otorgamiento}</td><td>{r.FolioLicencia}</td>" +
+                $"<td>{F(r.FechaImpresion)}</td><td>{r.ImpresaPor}</td><td>{r.BajadaAPam}</td><td>{r.BajadaPor}</td>" +
+                $"<td>{F(r.FechaRecepcionPam)}</td><td>{r.RecibidaEnPamPor}</td>" +
+                $"<td>{r.ContactadoParaEntrega}</td><td>{F(r.FechaEntrega)}</td>" +
+                $"<td>{r.Sexo}</td><td>{F(r.FechaNacimiento)}</td><td>{r.Edad}</td><td>{r.TipoLicencia}</td></tr>");
+        }
+        sb.AppendLine("</table>");
+        var b64 = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(sb.ToString()));
+        await JS.InvokeVoidAsync("eval",
+            $"var a=document.createElement('a');a.href='data:application/vnd.ms-excel;base64,{b64}';" +
+            "a.download='gestionador_licencias_export.xls';a.click()");
+    }
+}

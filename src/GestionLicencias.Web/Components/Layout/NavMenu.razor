@@ -1,0 +1,43 @@
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid ta-brand">
+        <a class="navbar-brand" href="">
+            <span class="ta-logo-chip">
+                <img src="logo-valpo.svg" alt="Municipalidad de Valparaiso" />
+            </span>
+            <span class="ta-brand-text">
+                <span class="ta-brand-title">DIRECCIÓN DE TRÁNSITO</span>
+                <span class="ta-brand-sub">Municipalidad de Valparaíso</span>
+            </span>
+        </a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="modulos/licencias">
+                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Gestionador de Licencias
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="modulos/licencias/seguimiento">
+                <span class="bi bi-truck-nav-menu" aria-hidden="true"></span> Seguimiento en Tiempo Real
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="modulos/licencias/estadisticas">
+                <span class="bi bi-bar-chart-fill-nav-menu" aria-hidden="true"></span> Estadísticas
+            </NavLink>
+        </div>
+    </nav>
+</div>
