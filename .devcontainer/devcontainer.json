@@ -1,0 +1,17 @@
+{
+  "name": "Gestión de Licencias",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/dotnet:2": {
+      "version": "10"
+    }
+  },
+  "forwardPorts": [5029],
+  "portsAttributes": {
+    "5029": {
+      "label": "Gestión de Licencias",
+      "onAutoForward": "notify"
+    }
+  },
+  "postStartCommand": "bash iniciar.sh"
+}
