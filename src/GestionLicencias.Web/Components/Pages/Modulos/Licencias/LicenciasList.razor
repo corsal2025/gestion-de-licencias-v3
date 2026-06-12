@@ -75,7 +75,7 @@
                     <tr class="ta-grupos">
                         <th colspan="11" class="grp-contrib">DATOS PERSONALES CONTRIBUYENTE Y CITACIÓN</th>
                         <th colspan="5" class="grp-carpeta sep-carpeta">CARPETA</th>
-                        <th colspan="3" class="grp-idoneidad sep-idoneidad">IDEONIDAD MORAL</th>
+                        <th colspan="3" class="grp-idoneidad sep-idoneidad">IDONEIDAD MORAL</th>
                         <th colspan="3" class="grp-domicilio sep-domicilio">CAMBIO DE DOMICILIO</th>
                         <th colspan="3" class="grp-f8 sep-f8">F8</th>
                         <th colspan="4" class="grp-otorg sep-otorg">OTORGAMIENTO E IMPRESIÓN</th>
@@ -90,31 +90,31 @@
                         <th>EDAD</th>
                         <th>TIPO DE LICENCIA</th>
                         <th>FECHA DE LA CITACIÓN</th>
-                        <th>TEFEFONO</th>
-                        <th>CORREO ELECRTRONICO</th>
+                        <th>TELÉFONO</th>
+                        <th>CORREO ELECTRÓNICO</th>
                         <th>LUGAR DE ATENCIÓN</th>
                         <th>ASISTE</th>
-                        <th class="sep-carpeta">FECHA ULTIMA CARPETA</th>
+                        <th class="sep-carpeta">FECHA ÚLTIMA CARPETA</th>
                         <th>ESTADO DE LA CARPETA</th>
                         <th>CAMBIO DE DOMICILIO PEDIDO</th>
                         <th>CIUDADES</th>
-                        <th>FECHA DIGITALIZACION CARPETA</th>
-                        <th class="sep-idoneidad">IDEONIDAD MORAL</th>
+                        <th>FECHA DIGITALIZACIÓN CARPETA</th>
+                        <th class="sep-idoneidad">IDONEIDAD MORAL</th>
                         <th>CONTACTADO</th>
                         <th>NOTIFICADO</th>
                         <th class="sep-domicilio">LUGAR DE ORIGEN CAMBIO DOMICILIO</th>
-                        <th>PETICION DE CAMBIO DOMICILIO</th>
+                        <th>PETICIÓN DE CAMBIO DOMICILIO</th>
                         <th>CAMBIO DOMICILIO PEDIDO POR</th>
                         <th class="sep-f8">FOLIO (F8)</th>
-                        <th>FECHA PENULTIMA CARPETA</th>
+                        <th>FECHA PENÚLTIMA CARPETA</th>
                         <th>ESTADO DEL F8</th>
                         <th class="sep-otorg">OTORGAMIENTO</th>
                         <th>FOLIO LICENCIA</th>
-                        <th>FECHA IMPRESION</th>
+                        <th>FECHA IMPRESIÓN</th>
                         <th>IMPRESA POR</th>
                         <th class="sep-pam">BAJADA A PAM</th>
                         <th>BAJADA POR</th>
-                        <th>FECHA RECEPCION PAM</th>
+                        <th>FECHA RECEPCIÓN PAM</th>
                         <th>RECIBIDA EN PAM POR</th>
                         <th>CONTACTADO CONTRIBUYENTE PARA ENTREGA</th>
                         <th>FECHA DE ENTREGA</th>
@@ -377,11 +377,11 @@
                 <div class="ta-pdf-options" style="grid-template-columns:1fr 1fr 1fr;">
                     <button class="ta-pdf-option" @onclick="() => DescargarPdf(false)" disabled="@GenerandoPdf">
                         <strong>ÚLTIMA CARPETA</strong>
-                        <span>Nombre, RUT y FECHA ULTIMA CARPETA</span>
+                        <span>Nombre, RUT y FECHA ÚLTIMA CARPETA</span>
                     </button>
                     <button class="ta-pdf-option" @onclick="() => DescargarPdf(true)" disabled="@GenerandoPdf">
                         <strong>PENÚLTIMA CARPETA</strong>
-                        <span>Nombre, RUT y FECHA PENULTIMA CARPETA</span>
+                        <span>Nombre, RUT y FECHA PENÚLTIMA CARPETA</span>
                     </button>
                     <button class="ta-pdf-option" @onclick="() => PdfImpresas = !PdfImpresas" disabled="@GenerandoPdf">
                         <strong>IMPRESAS</strong>
@@ -691,7 +691,7 @@
     {
         "OTORGADO" => "ta-chip-otorgado",
         "DENEGADO" => "ta-chip-denegado",
-        "ESPERA EXÁMEN" => "ta-chip-espera",
+        "ESPERA EXAMEN" => "ta-chip-espera",
         "S/SGL" => "ta-chip-ssgl",
         _ => ""
     };
@@ -700,7 +700,7 @@
     {
         "OTORGADO" => "ta-stat-ok",
         "DENEGADO" => "ta-stat-bad",
-        "ESPERA EXÁMEN" => "ta-stat-warn",
+        "ESPERA EXAMEN" => "ta-stat-warn",
         _ => ""
     };
 
@@ -902,15 +902,15 @@
         var sb = new System.Text.StringBuilder();
         sb.AppendLine("<table><tr>" +
             "<th>NOMBRE</th><th>APELLIDO</th><th>NOMBRE COMPLETO</th><th>RUT</th>" +
-            "<th>FECHA DE LA CITACIÓN</th><th>TEFEFONO</th><th>CORREO ELECRTRONICO</th>" +
-            "<th>LUGAR DE ATENCIÓN</th><th>ASISTE</th><th>FECHA ULTIMA CARPETA</th>" +
-            "<th>ESTADO DE LA CARPETA</th><th>FECHA DIGITALIZACION CARPETA</th>" +
-            "<th>IDEONIDAD MORAL</th><th>CONTACTADO</th><th>NOTIFICADO</th>" +
-            "<th>LUGAR DE ORIGEN CAMBIO DOMICILIO</th><th>PETICION DE CAMBIO DOMICILIO</th>" +
-            "<th>CAMBIO DOMICILIO PEDIDO POR</th><th>FOLIO (F8)</th><th>FECHA PENULTIMA CARPETA</th>" +
+            "<th>FECHA DE LA CITACIÓN</th><th>TELÉFONO</th><th>CORREO ELECTRÓNICO</th>" +
+            "<th>LUGAR DE ATENCIÓN</th><th>ASISTE</th><th>FECHA ÚLTIMA CARPETA</th>" +
+            "<th>ESTADO DE LA CARPETA</th><th>FECHA DIGITALIZACIÓN CARPETA</th>" +
+            "<th>IDONEIDAD MORAL</th><th>CONTACTADO</th><th>NOTIFICADO</th>" +
+            "<th>LUGAR DE ORIGEN CAMBIO DOMICILIO</th><th>PETICIÓN DE CAMBIO DOMICILIO</th>" +
+            "<th>CAMBIO DOMICILIO PEDIDO POR</th><th>FOLIO (F8)</th><th>FECHA PENÚLTIMA CARPETA</th>" +
             "<th>ESTADO DEL F8</th><th>OTORGAMIENTO</th><th>FOLIO LICENCIA</th>" +
-            "<th>FECHA IMPRESION</th><th>IMPRESA POR</th><th>BAJADA A PAM</th><th>BAJADA POR</th>" +
-            "<th>FECHA RECEPCION PAM</th><th>RECIBIDA EN PAM POR</th>" +
+            "<th>FECHA IMPRESIÓN</th><th>IMPRESA POR</th><th>BAJADA A PAM</th><th>BAJADA POR</th>" +
+            "<th>FECHA RECEPCIÓN PAM</th><th>RECIBIDA EN PAM POR</th>" +
             "<th>CONTACTADO CONTRIBUYENTE PARA ENTREGA</th><th>FECHA DE ENTREGA</th>" +
             "<th>SEXO</th><th>FECHA DE NACIMIENTO</th><th>EDAD</th><th>TIPO DE LICENCIA</th>" +
             "<th>CAMBIO DE DOMICILIO PEDIDO</th><th>CIUDADES</th></tr>");

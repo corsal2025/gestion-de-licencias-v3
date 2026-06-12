@@ -67,7 +67,7 @@ public static class ReporteImpresasPdf
                         header.Cell().Element(Th).Text("#").Bold().FontColor("#ffffff").FontSize(8);
                         header.Cell().Element(Th).Text("NOMBRE COMPLETO").Bold().FontColor("#ffffff").FontSize(8);
                         header.Cell().Element(Th).Text("RUT").Bold().FontColor("#ffffff").FontSize(8);
-                        header.Cell().Element(Th).Text("FECHA IMPRESION").Bold().FontColor("#ffffff").FontSize(8);
+                        header.Cell().Element(Th).Text("FECHA IMPRESIÓN").Bold().FontColor("#ffffff").FontSize(8);
                     });
 
                     var i = 0;

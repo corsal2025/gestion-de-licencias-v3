@@ -55,7 +55,7 @@ public static class Catalogos
     [
         "OTORGADO",
         "DENEGADO",
-        "ESPERA EXÁMEN",
+        "ESPERA EXAMEN",
         "S/SGL"
     ];
 

@@ -61,7 +61,7 @@ window.taCharts = {
         const otColors = ot.labels.map(l =>
             l === 'OTORGADO' ? '#4edea3' :
             l === 'DENEGADO' ? '#ff7a6e' :
-            l === 'ESPERA EXÁMEN' ? '#ffb95f' :
+            l === 'ESPERA EXAMEN' ? '#ffb95f' :
             l === 'S/SGL' ? '#8e90a2' : '#adc6ff');
         make('chOtorgamiento', {
             type: 'doughnut',

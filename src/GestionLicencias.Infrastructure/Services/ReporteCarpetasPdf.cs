@@ -14,7 +14,7 @@ public static class ReporteCarpetasPdf
     public static byte[] Generar(IReadOnlyList<TramiteLicencia> registros, bool penultima)
     {
         var titulo = penultima ? "REPORTE — PENÚLTIMA CARPETA" : "REPORTE — ÚLTIMA CARPETA";
-        var etiquetaFecha = penultima ? "FECHA PENULTIMA CARPETA" : "FECHA ULTIMA CARPETA";
+        var etiquetaFecha = penultima ? "FECHA PENÚLTIMA CARPETA" : "FECHA ÚLTIMA CARPETA";
 
         var filas = registros
             .Select(r => new

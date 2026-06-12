@@ -15,7 +15,7 @@ public class TramiteLicencia : BaseTramite
     // Columna 5: FECHA DE LA CITACIÓN
     public DateTime? FechaCitacion { get; set; }
 
-    // Columnas 6 y 7 (TEFEFONO / CORREO ELECRTRONICO) viven en BaseTramite (Telefono / Email)
+    // Columnas 6 y 7 (TELÉFONO / CORREO ELECTRÓNICO) viven en BaseTramite (Telefono / Email)
 
     // Columna 8: LUGAR DE ATENCIÓN
     public string? LugarAtencion { get; set; }
@@ -23,16 +23,16 @@ public class TramiteLicencia : BaseTramite
     // Columna 9: ASISTE (SI/NO)
     public string? Asiste { get; set; }
 
-    // Columna 10: FECHA ULTIMA CARPETA
+    // Columna 10: FECHA ÚLTIMA CARPETA
     public DateTime? FechaUltimaCarpeta { get; set; }
 
     // Columna 11: ESTADO DE LA CARPETA
     public string? EstadoCarpeta { get; set; }
 
-    // Columna 12: FECHA DIGITALIZACION CARPETA
+    // Columna 12: FECHA DIGITALIZACIÓN CARPETA
     public DateTime? FechaDigitalizacionCarpeta { get; set; }
 
-    // Columna 13: IDEONIDAD MORAL (APROBADA/REPROBADA)
+    // Columna 13: IDONEIDAD MORAL (APROBADA/REPROBADA)
     public string? IdoneidadMoral { get; set; }
 
     // Columna 14: CONTACTADO (SI/NO)
