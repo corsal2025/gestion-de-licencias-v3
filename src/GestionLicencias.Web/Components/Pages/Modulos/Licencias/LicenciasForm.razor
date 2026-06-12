@@ -58,7 +58,7 @@
                 </div>
                 <div class="f8-field">
                     <label>LUGAR DE ATENCIÓN</label>
-                    <select @bind="Modelo.LugarAtencion">
+                    <select @bind="Modelo.LugarAtencion" @bind:after="OnLugarAtencionChanged">
                         <option value="">—</option>
                         @foreach (var v in Catalogos.LugaresAtencion)
                         {
@@ -68,7 +68,7 @@
                 </div>
                 <div class="f8-field">
                     <label>ASISTE</label>
-                    <select @bind="Modelo.Asiste">
+                    <select @bind="Modelo.Asiste" @bind:after="OnAsisteChanged">
                         <option value="">—</option>
                         @foreach (var v in Catalogos.SiNo)
                         {
@@ -79,7 +79,15 @@
             </div>
         </fieldset>
 
-        <fieldset>
+        @if (Modelo.ProcesoBloqueado)
+        {
+            <div class="f8-msg f8-msg-error">
+                ⛔ PROCESO BLOQUEADO: el contribuyente NO ASISTIÓ a la citación.
+                Debe realizar el trámite nuevamente desde cero (crear un nuevo registro).
+            </div>
+        }
+
+        <fieldset disabled="@Modelo.ProcesoBloqueado">
             <legend>Carpeta</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -88,9 +96,29 @@
                 </div>
                 <div class="f8-field">
                     <label>ESTADO DE LA CARPETA</label>
-                    <select @bind="Modelo.EstadoCarpeta">
+                    <select @bind="Modelo.EstadoCarpeta" @bind:after="OnEstadoCarpetaChanged">
                         <option value="">—</option>
                         @foreach (var v in Catalogos.EstadosCarpeta)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>CAMBIO DE DOMICILIO PEDIDO</label>
+                    <select @bind="Modelo.CambioDomicilioPedido" disabled="@(!Modelo.CambioDomicilioActivo)">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.SiNo)
+                        {
+                            <option value="@v">@v</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field">
+                    <label>CIUDADES</label>
+                    <select @bind="Modelo.CiudadCambioDomicilio" disabled="@(!Modelo.CambioDomicilioActivo)">
+                        <option value="">—</option>
+                        @foreach (var v in Catalogos.CiudadesChile)
                         {
                             <option value="@v">@v</option>
                         }
@@ -133,7 +161,7 @@
             </div>
         </fieldset>
 
-        <fieldset>
+        <fieldset disabled="@Modelo.ProcesoBloqueado">
             <legend>Cambio de domicilio</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -163,7 +191,7 @@
             </div>
         </fieldset>
 
-        <fieldset>
+        <fieldset disabled="@Modelo.ProcesoBloqueado">
             <legend>F8</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -187,7 +215,7 @@
             </div>
         </fieldset>
 
-        <fieldset>
+        <fieldset disabled="@Modelo.ProcesoBloqueado">
             <legend>Otorgamiento e impresión</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -221,7 +249,7 @@
             </div>
         </fieldset>
 
-        <fieldset>
+        <fieldset disabled="@Modelo.ProcesoBloqueado">
             <legend>PAM y entrega</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -360,6 +388,41 @@
         t = t.TrimStart('+');
         if (t.StartsWith("56") && t.Length > 9) return "+" + t;
         return "+56 " + t;
+    }
+
+    private void OnAsisteChanged()
+    {
+        if (Modelo is null) return;
+        if (Modelo.ProcesoBloqueado)
+        {
+            Modelo.Estado = "BLOQUEADO - NO ASISTIÓ";
+            Mensaje = "Proceso bloqueado por inasistencia: el contribuyente debe realizar el trámite nuevamente desde cero.";
+            EsError = true;
+        }
+        else if (Modelo.Estado == "BLOQUEADO - NO ASISTIÓ")
+        {
+            Modelo.Estado = "En Proceso";
+            Mensaje = "";
+            EsError = false;
+        }
+    }
+
+    private void OnLugarAtencionChanged()
+    {
+        if (Modelo is null) return;
+        // PLACILLA siempre queda vinculada a SANDRA en IMPRESA POR.
+        if (Modelo.LugarAtencion == "PLACILLA")
+            Modelo.ImpresaPor = "SANDRA";
+    }
+
+    private void OnEstadoCarpetaChanged()
+    {
+        if (Modelo is null) return;
+        if (!Modelo.CambioDomicilioActivo)
+        {
+            Modelo.CambioDomicilioPedido = null;
+            Modelo.CiudadCambioDomicilio = null;
+        }
     }
 
     private async Task Guardar()

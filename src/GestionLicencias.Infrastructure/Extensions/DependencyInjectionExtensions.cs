@@ -22,6 +22,7 @@ public static class DependencyInjectionExtensions
         services.AddScoped<TramiteLicenciaService>();
         services.AddScoped<ITramiteService<TramiteLicencia>>(sp =>
             sp.GetRequiredService<TramiteLicenciaService>());
+        services.AddScoped<UsuarioService>();
 
         return services;
     }

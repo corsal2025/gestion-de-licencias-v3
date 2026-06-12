@@ -9,9 +9,20 @@ public class GestionLicenciasDbContext : DbContext
         : base(options) { }
 
     public DbSet<TramiteLicencia> TramitesLicencia { get; set; }
+    public DbSet<Usuario> Usuarios { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Usuario>(entity =>
+        {
+            entity.ToTable("Usuarios");
+            entity.HasKey(u => u.Id);
+            entity.Property(u => u.NombreUsuario).HasMaxLength(100);
+            entity.Property(u => u.NombreCompleto).HasMaxLength(200);
+            entity.Property(u => u.Rol).HasMaxLength(50);
+            entity.HasIndex(u => u.NombreUsuario).IsUnique();
+        });
+
         modelBuilder.Entity<BaseTramite>(entity =>
         {
             entity.ToTable("Tramites");

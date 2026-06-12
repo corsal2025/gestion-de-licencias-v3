@@ -1,0 +1,189 @@
+@page "/admin/usuarios"
+@rendermode InteractiveServer
+@inject UsuarioService Servicio
+@inject SesionUsuario Sesion
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+<PageTitle>Usuarios — Gestión de Licencias</PageTitle>
+
+<div class="f8-wrapper f8-form">
+    <div class="f8-topbar">
+        <h2>Administración de usuarios</h2>
+        <div class="f8-actions">
+            @if (Sesion.Actual is not null)
+            {
+                <span class="ta-system-status" style="align-self:center;">
+                    @Sesion.Actual.NombreCompleto — @Sesion.Actual.Rol
+                </span>
+            }
+            <button class="f8-btn" @onclick="@(() => Nav.NavigateTo("/modulos/licencias"))">Ir al gestionador</button>
+        </div>
+    </div>
+
+    @if (!SesionLista)
+    {
+        <p>Cargando...</p>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(Mensaje))
+        {
+            <div class="f8-msg @(EsError ? "f8-msg-error" : "f8-msg-ok")">@Mensaje</div>
+        }
+
+        <fieldset>
+            <legend>Nuevo usuario</legend>
+            <div class="f8-form-grid">
+                <div class="f8-field">
+                    <label>USUARIO</label>
+                    <input @bind="NuevoNombreUsuario" placeholder="ej: sandra" />
+                </div>
+                <div class="f8-field">
+                    <label>NOMBRE COMPLETO</label>
+                    <input @bind="NuevoNombreCompleto" />
+                </div>
+                <div class="f8-field">
+                    <label>CLAVE</label>
+                    <input type="password" @bind="NuevaClave" />
+                </div>
+                <div class="f8-field">
+                    <label>ROL</label>
+                    <select @bind="NuevoRol">
+                        @foreach (var r in Roles.Todos)
+                        {
+                            <option value="@r">@r</option>
+                        }
+                    </select>
+                </div>
+                <div class="f8-field" style="display:flex;align-items:flex-end;">
+                    <button class="f8-btn f8-btn-primary" style="width:100%;" @onclick="Crear">Crear usuario</button>
+                </div>
+            </div>
+            <p style="font-size:.75rem;margin-top:.5rem;">
+                ADMINISTRADOR, DIRECTOR y JEFATURA tienen acceso total (incluido el desbloqueo de
+                procesos detenidos). Los demás roles solo pueden editar los datos del contribuyente
+                y la sección que les corresponde.
+            </p>
+        </fieldset>
+
+        <fieldset>
+            <legend>Usuarios del sistema</legend>
+            <div class="f8-scroll">
+                <table class="f8-table">
+                    <thead>
+                        <tr class="ta-cols">
+                            <th>USUARIO</th>
+                            <th>NOMBRE COMPLETO</th>
+                            <th>ROL</th>
+                            <th>ACTIVO</th>
+                            <th>NUEVA CLAVE</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var u in Lista)
+                        {
+                            <tr>
+                                <td><span class="ta-readonly ta-mono">@u.NombreUsuario</span></td>
+                                <td><input class="ta-cell ta-w-lg" @bind="u.NombreCompleto" /></td>
+                                <td>
+                                    <select class="ta-cell ta-w-lg" @bind="u.Rol">
+                                        @foreach (var r in Roles.Todos)
+                                        {
+                                            <option value="@r">@r</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td>
+                                    <select class="ta-cell ta-w-sm @(u.Activo ? "ta-si" : "ta-no")" @bind="u.Activo">
+                                        <option value="true">SI</option>
+                                        <option value="false">NO</option>
+                                    </select>
+                                </td>
+                                <td><input type="password" class="ta-cell ta-w-md" placeholder="(sin cambio)" @bind="ClavesNuevas[u.Id]" /></td>
+                                <td>
+                                    <button class="f8-btn" @onclick="() => Guardar(u)">Guardar</button>
+                                    <button class="f8-btn f8-btn-danger" @onclick="() => Eliminar(u)"
+                                            disabled="@(u.Id == Sesion.Actual!.Id)">Eliminar</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </fieldset>
+    }
+</div>
+
+@code {
+    private List<Usuario> Lista = new();
+    private Dictionary<int, string> ClavesNuevas = new();
+    private bool SesionLista = false;
+    private string Mensaje = "";
+    private bool EsError = false;
+
+    private string NuevoNombreUsuario = "";
+    private string NuevoNombreCompleto = "";
+    private string NuevaClave = "";
+    private string NuevoRol = Roles.Carpeta;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var actual = await Sesion.CargarAsync();
+            if (actual is null)
+            {
+                Nav.NavigateTo("/login", true);
+                return;
+            }
+            if (!Sesion.EsPrivilegiado)
+            {
+                Nav.NavigateTo("/modulos/licencias");
+                return;
+            }
+            await CargarLista();
+            SesionLista = true;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CargarLista()
+    {
+        Lista = await Servicio.ObtenerTodosAsync();
+        ClavesNuevas = Lista.ToDictionary(u => u.Id, _ => "");
+    }
+
+    private async Task Crear()
+    {
+        var (ok, msg) = await Servicio.CrearAsync(
+            NuevoNombreUsuario, NuevaClave, NuevoNombreCompleto, NuevoRol);
+        Mensaje = msg;
+        EsError = !ok;
+        if (ok)
+        {
+            NuevoNombreUsuario = NuevoNombreCompleto = NuevaClave = "";
+            await CargarLista();
+        }
+    }
+
+    private async Task Guardar(Usuario u)
+    {
+        var clave = ClavesNuevas.GetValueOrDefault(u.Id, "");
+        await Servicio.ActualizarAsync(u, string.IsNullOrEmpty(clave) ? null : clave);
+        ClavesNuevas[u.Id] = "";
+        Mensaje = $"Usuario '{u.NombreUsuario}' actualizado.";
+        EsError = false;
+    }
+
+    private async Task Eliminar(Usuario u)
+    {
+        var ok = await JS.InvokeAsync<bool>("confirm", $"¿Eliminar al usuario '{u.NombreUsuario}'?");
+        if (!ok) return;
+        await Servicio.EliminarAsync(u.Id);
+        Mensaje = $"Usuario '{u.NombreUsuario}' eliminado.";
+        EsError = false;
+        await CargarLista();
+    }
+}

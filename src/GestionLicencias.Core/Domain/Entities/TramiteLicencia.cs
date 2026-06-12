@@ -101,6 +101,40 @@ public class TramiteLicencia : BaseTramite
     // Columna 34: TIPO DE LICENCIA (Chilean license classes)
     public string? TipoLicencia { get; set; }
 
+    // Columna 35: CAMBIO DE DOMICILIO PEDIDO (SI/NO) — solo aplica cuando
+    // ESTADO DE LA CARPETA es "CAMBIO DE DOMICILIO"
+    public string? CambioDomicilioPedido { get; set; }
+
+    // Columna 36: CIUDADES — ciudad de destino del cambio de domicilio
+    public string? CiudadCambioDomicilio { get; set; }
+
+    // --- Bloqueo del proceso ---
+
+    // Desbloqueo otorgado por ADMINISTRADOR/DIRECTOR/JEFATURA: levanta el
+    // bloqueo aunque persista la condición que lo originó.
+    public bool DesbloqueoAdministrativo { get; set; }
+    public string? DesbloqueadoPor { get; set; }
+    public DateTime? FechaDesbloqueo { get; set; }
+
+    // La idoneidad moral JUZGADO o REPROBADA detiene el proceso.
+    public bool IdoneidadBloqueante => IdoneidadMoral is "JUZGADO" or "REPROBADA";
+
+    // El proceso queda bloqueado cuando el contribuyente no asiste a la
+    // citación (debe iniciar un trámite nuevo desde cero) o cuando la
+    // idoneidad moral resulta JUZGADO/REPROBADA. Solo un desbloqueo
+    // administrativo lo levanta.
+    public bool ProcesoBloqueado =>
+        !DesbloqueoAdministrativo && (Asiste == "NO" || IdoneidadBloqueante);
+
+    public string? MotivoBloqueo =>
+        !ProcesoBloqueado ? null
+        : Asiste == "NO" ? "NO ASISTIÓ A LA CITACIÓN"
+        : $"IDONEIDAD MORAL {IdoneidadMoral}";
+
+    // Las columnas de cambio de domicilio en Carpeta solo se habilitan
+    // con este estado exacto.
+    public bool CambioDomicilioActivo => EstadoCarpeta == "CAMBIO DE DOMICILIO";
+
     // Derived from FechaNacimiento; not stored
     public int? Edad => CalcularEdad(FechaNacimiento);
 

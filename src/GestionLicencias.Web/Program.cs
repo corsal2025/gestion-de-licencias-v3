@@ -1,7 +1,10 @@
+using GestionLicencias.Core.Domain;
 using GestionLicencias.Core.Domain.Entities;
 using GestionLicencias.Infrastructure.Extensions;
 using GestionLicencias.Infrastructure.Persistence;
+using GestionLicencias.Infrastructure.Services;
 using GestionLicencias.Web.Components;
+using GestionLicencias.Web.Services;
 using Microsoft.EntityFrameworkCore;
 
 QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
@@ -12,6 +15,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddGestionLicenciasInfrastructure(builder.Configuration);
+builder.Services.AddScoped<SesionUsuario>();
 
 var app = builder.Build();
 
@@ -20,6 +24,35 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<GestionLicenciasDbContext>();
     db.Database.Migrate();
+
+    // Usuarios iniciales con acceso total. El administrador puede crear el
+    // resto de los usuarios (uno por sección) desde /admin/usuarios.
+    if (!db.Usuarios.Any())
+    {
+        db.Usuarios.AddRange(
+            new Usuario
+            {
+                NombreUsuario = "admin",
+                ClaveHash = UsuarioService.HashClave("admin", "admin123"),
+                NombreCompleto = "Administrador del Sistema",
+                Rol = Roles.Administrador
+            },
+            new Usuario
+            {
+                NombreUsuario = "director",
+                ClaveHash = UsuarioService.HashClave("director", "director123"),
+                NombreCompleto = "Director de Tránsito",
+                Rol = Roles.Director
+            },
+            new Usuario
+            {
+                NombreUsuario = "jefatura",
+                ClaveHash = UsuarioService.HashClave("jefatura", "jefatura123"),
+                NombreCompleto = "Jefatura de Licencias",
+                Rol = Roles.Jefatura
+            });
+        db.SaveChanges();
+    }
 
     if (!db.TramitesLicencia.Any())
     {

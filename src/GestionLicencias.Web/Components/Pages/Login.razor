@@ -1,0 +1,82 @@
+@page "/login"
+@rendermode InteractiveServer
+@layout Layout.MainLayout
+@inject UsuarioService Usuarios
+@inject SesionUsuario Sesion
+@inject NavigationManager Nav
+
+<PageTitle>Iniciar sesión — Gestión de Licencias</PageTitle>
+
+<div class="f8-wrapper f8-form" style="max-width:420px;margin:3rem auto;">
+    <div class="f8-topbar">
+        <h2>Iniciar sesión</h2>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Mensaje))
+    {
+        <div class="f8-msg f8-msg-error">@Mensaje</div>
+    }
+
+    <fieldset>
+        <legend>Credenciales</legend>
+        <div class="f8-field">
+            <label>USUARIO</label>
+            <input @bind="NombreUsuario" @bind:event="oninput" @onkeyup="OnKeyUp" />
+        </div>
+        <div class="f8-field" style="margin-top:.6rem;">
+            <label>CLAVE</label>
+            <input type="password" @bind="Clave" @bind:event="oninput" @onkeyup="OnKeyUp" />
+        </div>
+    </fieldset>
+
+    <div class="f8-actions" style="margin-top:1rem;">
+        <button class="f8-btn f8-btn-primary" style="width:100%;" @onclick="Entrar" disabled="@Validando">
+            @(Validando ? "Validando..." : "Entrar")
+        </button>
+    </div>
+</div>
+
+@code {
+    private string NombreUsuario = "";
+    private string Clave = "";
+    private string Mensaje = "";
+    private bool Validando = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Si ya hay sesión activa, ir directo al gestionador.
+            var actual = await Sesion.CargarAsync();
+            if (actual is not null)
+                Nav.NavigateTo("/modulos/licencias");
+        }
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await Entrar();
+    }
+
+    private async Task Entrar()
+    {
+        Validando = true;
+        try
+        {
+            var usuario = await Usuarios.ValidarLoginAsync(NombreUsuario, Clave);
+            if (usuario is null)
+            {
+                Mensaje = "Usuario o clave incorrectos, o usuario inactivo.";
+                return;
+            }
+
+            await Sesion.IniciarAsync(new SesionUsuario.Info(
+                usuario.Id, usuario.NombreUsuario, usuario.NombreCompleto, usuario.Rol));
+            Nav.NavigateTo("/modulos/licencias");
+        }
+        finally
+        {
+            Validando = false;
+        }
+    }
+}
