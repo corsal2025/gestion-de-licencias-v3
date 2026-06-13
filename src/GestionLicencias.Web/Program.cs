@@ -33,21 +33,21 @@ using (var scope = app.Services.CreateScope())
             new Usuario
             {
                 NombreUsuario = "admin",
-                ClaveHash = UsuarioService.HashClave("admin", "admin123"),
+                ClaveHash = UsuarioService.HashClave("admin123"),
                 NombreCompleto = "Administrador del Sistema",
                 Rol = Roles.Administrador
             },
             new Usuario
             {
                 NombreUsuario = "director",
-                ClaveHash = UsuarioService.HashClave("director", "director123"),
+                ClaveHash = UsuarioService.HashClave("director123"),
                 NombreCompleto = "Director de Tránsito",
                 Rol = Roles.Director
             },
             new Usuario
             {
                 NombreUsuario = "jefatura",
-                ClaveHash = UsuarioService.HashClave("jefatura", "jefatura123"),
+                ClaveHash = UsuarioService.HashClave("jefatura123"),
                 NombreCompleto = "Jefatura de Licencias",
                 Rol = Roles.Jefatura
             });
