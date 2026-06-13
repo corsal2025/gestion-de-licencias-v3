@@ -315,6 +315,11 @@
                             </td>
                             <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.FechaEntrega" @bind:after="() => GuardarFila(r)" /></td>
                             <td class="sep-acciones">
+                                @if (r.ProcesoBloqueado && Sesion.EsPrivilegiado)
+                                {
+                                    <button class="f8-btn" title="@r.MotivoBloqueo — Levantar el bloqueo administrativo"
+                                            @onclick="() => Desbloquear(r)">Desbloquear</button>
+                                }
                                 <button class="f8-btn" @onclick="() => Editar(r.Id)">Editar</button>
                                 <button class="f8-btn f8-btn-danger" @onclick="() => Eliminar(r.Id)">Eliminar</button>
                             </td>
@@ -623,6 +628,17 @@
             r.CambioDomicilioPedido = null;
             r.CiudadCambioDomicilio = null;
         }
+        await GuardarFila(r);
+    }
+
+    // Privileged-only: lift the administrative block so a stalled process
+    // (no asistió / idoneidad REPROBADA o JUZGADO) can be edited again.
+    private async Task Desbloquear(TramiteLicencia r)
+    {
+        r.DesbloqueoAdministrativo = true;
+        r.DesbloqueadoPor = UsuarioActual;
+        r.FechaDesbloqueo = DateTime.UtcNow;
+        if (r.Estado == "BLOQUEADO - NO ASISTIÓ") r.Estado = "En Proceso";
         await GuardarFila(r);
     }
 

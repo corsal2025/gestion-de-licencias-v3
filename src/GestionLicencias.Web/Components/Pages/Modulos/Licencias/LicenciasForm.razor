@@ -84,8 +84,15 @@
         @if (Modelo.ProcesoBloqueado)
         {
             <div class="f8-msg f8-msg-error">
-                ⛔ PROCESO BLOQUEADO: el contribuyente NO ASISTIÓ a la citación.
-                Debe realizar el trámite nuevamente desde cero (crear un nuevo registro).
+                ⛔ PROCESO BLOQUEADO: @Modelo.MotivoBloqueo.
+                @if (Sesion.EsPrivilegiado)
+                {
+                    <button class="f8-btn" style="margin-left:1rem;" @onclick="Desbloquear">Desbloquear</button>
+                }
+                else
+                {
+                    <span>Debe realizar el trámite nuevamente desde cero o solicitar el desbloqueo a una jefatura.</span>
+                }
             </div>
         }
 
@@ -436,6 +443,16 @@
             Modelo.CambioDomicilioPedido = null;
             Modelo.CiudadCambioDomicilio = null;
         }
+    }
+
+    // Privileged-only: lift the administrative block; takes effect on Guardar.
+    private void Desbloquear()
+    {
+        if (Modelo is null) return;
+        Modelo.DesbloqueoAdministrativo = true;
+        Modelo.DesbloqueadoPor = Sesion.Actual?.NombreUsuario ?? "SISTEMA";
+        Modelo.FechaDesbloqueo = DateTime.UtcNow;
+        if (Modelo.Estado == "BLOQUEADO - NO ASISTIÓ") Modelo.Estado = "En Proceso";
     }
 
     private async Task Guardar()
