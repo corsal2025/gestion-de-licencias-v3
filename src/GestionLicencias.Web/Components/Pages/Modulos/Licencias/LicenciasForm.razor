@@ -89,7 +89,7 @@
             </div>
         }
 
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.Carpeta))">
             <legend>Carpeta</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -130,6 +130,12 @@
                     <label>FECHA DIGITALIZACIÓN CARPETA</label>
                     <input type="date" @bind="Modelo.FechaDigitalizacionCarpeta" />
                 </div>
+            </div>
+        </fieldset>
+
+        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.IdoneidadMoral))">
+            <legend>Idoneidad moral</legend>
+            <div class="f8-form-grid">
                 <div class="f8-field">
                     <label>IDONEIDAD MORAL</label>
                     <select @bind="Modelo.IdoneidadMoral">
@@ -163,7 +169,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.CambioDomicilio))">
             <legend>Cambio de domicilio</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -193,7 +199,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.F8))">
             <legend>F8</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -217,7 +223,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))">
             <legend>Otorgamiento e impresión</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -251,7 +257,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.PamEntrega))">
             <legend>PAM y entrega</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -358,6 +364,10 @@
     private string Mensaje = "";
     private bool EsError = false;
     private bool Guardando = false;
+
+    // Section-level role gate: a non-privileged user only edits their section.
+    // Privileged roles edit everything; contribuyente/personal data stays open.
+    private bool NoEdita(string seccion) => !Sesion.PuedeEditar(seccion);
 
     protected override async Task OnParametersSetAsync()
     {
