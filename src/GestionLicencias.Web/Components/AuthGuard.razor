@@ -1,0 +1,49 @@
+@inject SesionUsuario Sesion
+@inject NavigationManager Nav
+
+@*
+    Wraps a page's content and only renders it once a valid session is
+    confirmed. ProtectedLocalStorage is only readable after the first
+    interactive render, so the check runs in OnAfterRenderAsync — the same
+    proven pattern used by the user administration page.
+*@
+
+@if (_verificada)
+{
+    @ChildContent
+}
+else
+{
+    <div class="f8-wrapper">
+        <p style="padding:1rem;">Verificando sesión...</p>
+    </div>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>When true, only ADMINISTRADOR/DIRECTOR/JEFATURA may stay on the page.</summary>
+    [Parameter] public bool RequierePrivilegio { get; set; }
+
+    private bool _verificada;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        var actual = await Sesion.CargarAsync();
+        if (actual is null)
+        {
+            Nav.NavigateTo("/login", true);
+            return;
+        }
+        if (RequierePrivilegio && !Sesion.EsPrivilegiado)
+        {
+            Nav.NavigateTo("/modulos/licencias", true);
+            return;
+        }
+
+        _verificada = true;
+        StateHasChanged();
+    }
+}

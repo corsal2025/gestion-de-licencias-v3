@@ -49,7 +49,7 @@
             // Si ya hay sesión activa, ir directo al gestionador.
             var actual = await Sesion.CargarAsync();
             if (actual is not null)
-                Nav.NavigateTo("/modulos/licencias");
+                Nav.NavigateTo("/modulos/licencias", true);
         }
     }
 
@@ -72,7 +72,7 @@
 
             await Sesion.IniciarAsync(new SesionUsuario.Info(
                 usuario.Id, usuario.NombreUsuario, usuario.NombreCompleto, usuario.Rol));
-            Nav.NavigateTo("/modulos/licencias");
+            Nav.NavigateTo("/modulos/licencias", true);
         }
         finally
         {

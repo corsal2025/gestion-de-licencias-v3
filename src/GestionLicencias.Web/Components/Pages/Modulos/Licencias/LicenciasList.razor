@@ -5,9 +5,11 @@
 @inject TramiteLicenciaService StatsService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
+@inject SesionUsuario Sesion
 
 <PageTitle>Gestionador de Licencias</PageTitle>
 
+<AuthGuard>
 <div class="f8-wrapper">
     <div class="f8-topbar">
         <h2>Gestionador de Licencias</h2>
@@ -338,6 +340,7 @@
         </div>
     }
 </div>
+</AuthGuard>
 
 @if (MostrarPegado)
 {
@@ -491,6 +494,10 @@
     private List<string> Dominios = new();
     private string NuevoDominio = "";
 
+    // Real connected user for the audit trail (UsuarioId); the guard guarantees
+    // a session exists, "SISTEMA" is only a defensive fallback.
+    private string UsuarioActual => Sesion.Actual?.NombreUsuario ?? "SISTEMA";
+
     private static readonly string[] DominiosBase =
         ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com", "munivalpo.cl"];
 
@@ -565,6 +572,7 @@
 
         try
         {
+            r.UsuarioId = UsuarioActual;
             await ModuloService.ActualizarAsync(r);
             ActualizarDuplicados();
             Estadisticas = await StatsService.ObtenerEstadisticasOtorgamientoAsync();
@@ -860,7 +868,7 @@
                 TipoLicencia = ColN(c, 33),
                 CambioDomicilioPedido = ColN(c, 34),
                 CiudadCambioDomicilio = ColN(c, 35),
-                UsuarioId = "SISTEMA",
+                UsuarioId = UsuarioActual,
                 TipoModulo = "TramiteLicencia"
             };
 

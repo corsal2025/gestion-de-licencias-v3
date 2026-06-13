@@ -3,9 +3,11 @@
 @rendermode InteractiveServer
 @inject ITramiteService<TramiteLicencia> ModuloService
 @inject NavigationManager Nav
+@inject SesionUsuario Sesion
 
 <PageTitle>@(Id == 0 ? "Nuevo registro" : "Editar registro") — MODELO POWERBI</PageTitle>
 
+<AuthGuard>
 <div class="f8-wrapper f8-form">
     <div class="f8-topbar">
         <h2>@(Id == 0 ? "Nuevo registro" : "Editar registro")</h2>
@@ -347,6 +349,7 @@
         </div>
     }
 </div>
+</AuthGuard>
 
 @code {
     [Parameter] public int Id { get; set; }
@@ -442,6 +445,8 @@
         Guardando = true;
         try
         {
+            // Stamp the connected user for the audit trail (the guard guarantees one).
+            Modelo.UsuarioId = Sesion.Actual?.NombreUsuario ?? "SISTEMA";
             if (Id == 0)
                 await ModuloService.CrearAsync(Modelo);
             else

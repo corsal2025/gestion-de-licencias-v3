@@ -19,10 +19,17 @@ main {
 
 .top-row {
     background-color: var(--ta-surface-container-low);
-    justify-content: flex-end;
+    justify-content: space-between;
     height: 3rem;
     display: flex;
     align-items: center;
+    gap: 1rem;
+}
+
+.ta-session-bar {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
 }
 
     .top-row ::deep a, .top-row ::deep .btn-link {
