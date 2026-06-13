@@ -178,9 +178,9 @@
                                     }
                                 </select>
                             </td>
-                            <td class="sep-carpeta"><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaUltimaCarpeta" @bind:after="() => GuardarFila(r)" /></td>
+                            <td class="sep-carpeta"><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Carpeta))" @bind="r.FechaUltimaCarpeta" @bind:after="() => GuardarFila(r)" /></td>
                             <td>
-                                <select class="ta-cell ta-w-lg ta-estado @ClaseEstado(r.EstadoCarpeta)" disabled="@r.ProcesoBloqueado" @bind="r.EstadoCarpeta" @bind:after="() => OnEstadoCarpetaChanged(r)">
+                                <select class="ta-cell ta-w-lg ta-estado @ClaseEstado(r.EstadoCarpeta)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Carpeta))" @bind="r.EstadoCarpeta" @bind:after="() => OnEstadoCarpetaChanged(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.EstadosCarpeta)
                                     {
@@ -189,7 +189,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.CambioDomicilioPedido)" disabled="@(r.ProcesoBloqueado || !r.CambioDomicilioActivo)" @bind="r.CambioDomicilioPedido" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.CambioDomicilioPedido)" disabled="@(r.ProcesoBloqueado || !r.CambioDomicilioActivo || NoEdita(Roles.Carpeta))" @bind="r.CambioDomicilioPedido" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -198,7 +198,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || !r.CambioDomicilioActivo)" @bind="r.CiudadCambioDomicilio" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || !r.CambioDomicilioActivo || NoEdita(Roles.Carpeta))" @bind="r.CiudadCambioDomicilio" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.CiudadesChile)
                                     {
@@ -206,9 +206,9 @@
                                     }
                                 </select>
                             </td>
-                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaDigitalizacionCarpeta" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Carpeta))" @bind="r.FechaDigitalizacionCarpeta" @bind:after="() => GuardarFila(r)" /></td>
                             <td class="sep-idoneidad">
-                                <select class="ta-cell ta-w-md @ClaseAprobada(r.IdoneidadMoral)" disabled="@r.ProcesoBloqueado" @bind="r.IdoneidadMoral" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md @ClaseAprobada(r.IdoneidadMoral)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.IdoneidadMoral))" @bind="r.IdoneidadMoral" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.IdoneidadMoral)
                                     {
@@ -217,7 +217,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.Contactado)" disabled="@r.ProcesoBloqueado" @bind="r.Contactado" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.Contactado)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.IdoneidadMoral))" @bind="r.Contactado" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -226,7 +226,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.Notificado)" disabled="@r.ProcesoBloqueado" @bind="r.Notificado" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.Notificado)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.IdoneidadMoral))" @bind="r.Notificado" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -234,9 +234,9 @@
                                     }
                                 </select>
                             </td>
-                            <td class="sep-domicilio"><input class="ta-cell ta-w-md" disabled="@r.ProcesoBloqueado" @bind="r.LugarOrigenCambioDomicilio" @bind:after="() => GuardarFila(r)" /></td>
+                            <td class="sep-domicilio"><input class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.CambioDomicilio))" @bind="r.LugarOrigenCambioDomicilio" @bind:after="() => GuardarFila(r)" /></td>
                             <td>
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.PeticionCambioDomicilio)" disabled="@r.ProcesoBloqueado" @bind="r.PeticionCambioDomicilio" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.PeticionCambioDomicilio)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.CambioDomicilio))" @bind="r.PeticionCambioDomicilio" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -245,7 +245,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@r.ProcesoBloqueado" @bind="r.CambioDomicilioPedidoPor" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.CambioDomicilio))" @bind="r.CambioDomicilioPedidoPor" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.CambioDomicilioPedidoPor)
                                     {
@@ -253,10 +253,10 @@
                                     }
                                 </select>
                             </td>
-                            <td class="sep-f8"><input class="ta-cell ta-mono ta-w-sm" disabled="@r.ProcesoBloqueado" @bind="r.FolioF8" @bind:after="() => GuardarFila(r)" /></td>
-                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaPenultimaCarpeta" @bind:after="() => GuardarFila(r)" /></td>
+                            <td class="sep-f8"><input class="ta-cell ta-mono ta-w-sm" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.F8))" @bind="r.FolioF8" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.F8))" @bind="r.FechaPenultimaCarpeta" @bind:after="() => GuardarFila(r)" /></td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@r.ProcesoBloqueado" @bind="r.EstadoF8" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.F8))" @bind="r.EstadoF8" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.EstadosF8)
                                     {
@@ -265,7 +265,7 @@
                                 </select>
                             </td>
                             <td class="sep-otorg">
-                                <select class="ta-cell ta-w-md @ChipOtorgamiento(r.Otorgamiento)" disabled="@r.ProcesoBloqueado" @bind="r.Otorgamiento" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md @ChipOtorgamiento(r.Otorgamiento)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))" @bind="r.Otorgamiento" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.Otorgamientos)
                                     {
@@ -273,10 +273,10 @@
                                     }
                                 </select>
                             </td>
-                            <td><input class="ta-cell ta-mono ta-w-sm" disabled="@r.ProcesoBloqueado" @bind="r.FolioLicencia" @bind:after="() => GuardarFila(r)" /></td>
-                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaImpresion" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input class="ta-cell ta-mono ta-w-sm" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))" @bind="r.FolioLicencia" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))" @bind="r.FechaImpresion" @bind:after="() => GuardarFila(r)" /></td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@r.ProcesoBloqueado" @bind="r.ImpresaPor" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))" @bind="r.ImpresaPor" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.ImpresaPor)
                                     {
@@ -285,7 +285,7 @@
                                 </select>
                             </td>
                             <td class="sep-pam">
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.BajadaAPam)" disabled="@r.ProcesoBloqueado" @bind="r.BajadaAPam" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.BajadaAPam)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.BajadaAPam" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -293,10 +293,10 @@
                                     }
                                 </select>
                             </td>
-                            <td><input class="ta-cell ta-w-sm" disabled="@r.ProcesoBloqueado" @bind="r.BajadaPor" @bind:after="() => GuardarFila(r)" /></td>
-                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaRecepcionPam" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input class="ta-cell ta-w-sm" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.BajadaPor" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.FechaRecepcionPam" @bind:after="() => GuardarFila(r)" /></td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@r.ProcesoBloqueado" @bind="r.RecibidaEnPamPor" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.RecibidaEnPamPor" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.RecibidaEnPamPor)
                                     {
@@ -305,7 +305,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.ContactadoParaEntrega)" disabled="@r.ProcesoBloqueado" @bind="r.ContactadoParaEntrega" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.ContactadoParaEntrega)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.ContactadoParaEntrega" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -313,7 +313,7 @@
                                     }
                                 </select>
                             </td>
-                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaEntrega" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.FechaEntrega" @bind:after="() => GuardarFila(r)" /></td>
                             <td class="sep-acciones">
                                 <button class="f8-btn" @onclick="() => Editar(r.Id)">Editar</button>
                                 <button class="f8-btn f8-btn-danger" @onclick="() => Eliminar(r.Id)">Eliminar</button>
@@ -497,6 +497,11 @@
     // Real connected user for the audit trail (UsuarioId); the guard guarantees
     // a session exists, "SISTEMA" is only a defensive fallback.
     private string UsuarioActual => Sesion.Actual?.NombreUsuario ?? "SISTEMA";
+
+    // A non-privileged user may only edit the section that matches their role.
+    // Privileged roles edit everything; the contribuyente/citación block stays
+    // editable by any connected user. Combined with the existing per-row locks.
+    private bool NoEdita(string seccion) => !Sesion.PuedeEditar(seccion);
 
     private static readonly string[] DominiosBase =
         ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com", "munivalpo.cl"];
