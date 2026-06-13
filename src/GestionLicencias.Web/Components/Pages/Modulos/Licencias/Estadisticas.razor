@@ -6,7 +6,7 @@
 
 <PageTitle>Estadísticas — MODELO POWERBI</PageTitle>
 
-<AuthGuard>
+<AuthGuard OnAutorizado="RenderizarGraficos">
 <div class="f8-wrapper">
     <div class="f8-topbar">
         <h2>Estadísticas del modelo</h2>
@@ -57,20 +57,16 @@
 @code {
     private EstadisticasModelo? Datos;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender) return;
-        await CargarYRenderizar();
-    }
-
-    private async Task CargarYRenderizar()
+    // Invoked by AuthGuard once the content (including the <canvas> elements)
+    // is in the DOM, so taCharts.render can find them by id.
+    private async Task RenderizarGraficos()
     {
         Datos = await StatsService.ObtenerEstadisticasModeloAsync();
         StateHasChanged();
         await JS.InvokeVoidAsync("taCharts.render", Datos);
     }
 
-    private async Task Actualizar() => await CargarYRenderizar();
+    private async Task Actualizar() => await RenderizarGraficos();
 
     private void Volver() => Nav.NavigateTo("/modulos/licencias");
 }
