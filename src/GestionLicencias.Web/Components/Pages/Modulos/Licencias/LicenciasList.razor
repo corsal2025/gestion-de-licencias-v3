@@ -725,6 +725,11 @@
     {
         FiltroCiudadRapida = e.Value?.ToString() ?? "";
         CiudadDropdownAbierto = r.Id;
+        if (string.IsNullOrWhiteSpace(FiltroCiudadRapida))
+        {
+            r.CiudadCambioDomicilio = null;
+            r.LugarOrigenCambioDomicilio = null;
+        }
         await Task.CompletedTask;
     }
 

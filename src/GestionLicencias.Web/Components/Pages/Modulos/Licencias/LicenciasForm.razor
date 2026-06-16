@@ -502,6 +502,11 @@
     {
         FiltroCiudadForm = e.Value?.ToString() ?? "";
         CiudadFormAbierto = true;
+        if (string.IsNullOrWhiteSpace(FiltroCiudadForm) && Modelo is not null)
+        {
+            Modelo.CiudadCambioDomicilio = null;
+            Modelo.LugarOrigenCambioDomicilio = null;
+        }
     }
 
     private void SeleccionarCiudadForm(string ciudad)
