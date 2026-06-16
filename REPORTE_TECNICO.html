@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Reporte Técnico — Gestión de Licencias v3</title>
+<style>
+  @page { size: A4; margin: 20mm; }
+  @media print { .no-print { display: none !important; } body { font-size: 11pt; } }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a1a; line-height: 1.5; padding: 30px; max-width: 210mm; margin: 0 auto; }
+  h1 { font-size: 22pt; color: #003366; border-bottom: 3px solid #003366; padding-bottom: 8px; margin-bottom: 5px; }
+  h2 { font-size: 14pt; color: #003366; margin-top: 22px; margin-bottom: 8px; border-left: 4px solid #003366; padding-left: 10px; }
+  h3 { font-size: 12pt; color: #004080; margin-top: 14px; margin-bottom: 6px; }
+  .header-info { font-size: 10pt; color: #555; margin-bottom: 20px; }
+  .header-info span { display: inline-block; margin-right: 20px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 14px 0; font-size: 10pt; }
+  th { background: #003366; color: white; padding: 6px 8px; text-align: left; font-weight: 600; }
+  td { padding: 5px 8px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background: #f5f8fc; }
+  tr:hover { background: #e8f0fe; }
+  .highlight { background: #fff3cd !important; font-weight: 600; }
+  .total-row { background: #003366 !important; color: white; font-weight: 700; }
+  .total-row:hover { background: #004080 !important; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 9pt; font-weight: 600; }
+  .badge-green { background: #d4edda; color: #155724; }
+  .badge-blue { background: #d1ecf1; color: #0c5460; }
+  .badge-yellow { background: #fff3cd; color: #856404; }
+  .badge-red { background: #f8d7da; color: #721c24; }
+  .arch-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 12px 16px; margin: 6px 0; }
+  .arch-box strong { color: #003366; }
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 10px 0; }
+  .summary-card { background: #f0f4f8; border-radius: 6px; padding: 12px; text-align: center; border: 1px solid #d0d7de; }
+  .summary-card .num { font-size: 20pt; font-weight: 700; color: #003366; }
+  .summary-card .label { font-size: 9pt; color: #555; margin-top: 2px; }
+  .code { font-family: 'Consolas', monospace; background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 9pt; }
+  .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #ccc; font-size: 9pt; color: #888; text-align: center; }
+  .print-btn { position: fixed; bottom: 20px; right: 20px; background: #003366; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 12pt; box-shadow: 0 2px 8px rgba(0,0,0,0.3); z-index: 999; }
+  .print-btn:hover { background: #004080; }
+</style>
+</head>
+<body>
+
+<button class="print-btn no-print" onclick="window.print()">imprimir / Guardar como PDF</button>
+
+<h1>Reporte Técnico</h1>
+<div class="header-info">
+  <span><strong>Proyecto:</strong> Municipalidad de Valparaíso — Gestión de Licencias de Conducir</span><br>
+  <span><strong>Versión:</strong> v3</span>
+  <span><strong>Framework:</strong> .NET 10.0 / Blazor Server</span>
+  <span><strong>Base de datos:</strong> SQLite</span><br>
+  <span><strong>Último commit:</strong> <span class="code">a635a6f</span> (16/06/2026)</span>
+  <span><strong>Repositorio:</strong> github.com/corsal2025/gestion-de-licencias-v3</span>
+</div>
+
+<!-- RESUMEN EJECUTIVO -->
+<h2>1. Resumen Ejecutivo</h2>
+<div class="summary-grid">
+  <div class="summary-card"><div class="num">8.61 MB</div><div class="label">Tamaño total proyecto</div></div>
+  <div class="summary-card"><div class="num">97</div><div class="label">Archivos fuente</div></div>
+  <div class="summary-card"><div class="num">5</div><div class="label">Paquetes NuGet</div></div>
+</div>
+<div class="summary-grid">
+  <div class="summary-card"><div class="num">3</div><div class="label">Proyectos (Core/Infra/Web)</div></div>
+  <div class="summary-card"><div class="num">38</div><div class="label">Columnas en TramiteLicencia</div></div>
+  <div class="summary-card"><div class="num">5</div><div class="label">Servicios registrados (DI)</div></div>
+</div>
+
+<!-- TAMAÑO POR CAPA -->
+<h2>2. Desglose de Tamaño por Capa</h2>
+<table>
+  <tr><th>Capa / Carpeta</th><th>Tamaño</th><th>Descripción</th></tr>
+  <tr><td><strong>GestionLicencias.Core</strong></td><td>194.6 KB (0.19 MB)</td><td>Entidades, interfaces, catálogos, roles</td></tr>
+  <tr><td><strong>GestionLicencias.Infrastructure</strong></td><td>12.2 MB</td><td>EF Core, servicios, migraciones, QuestPDF</td></tr>
+  <tr><td>&nbsp;&nbsp;— Migraciones</td><td>55.1 KB</td><td>5 migraciones EF Core</td></tr>
+  <tr><td>&nbsp;&nbsp;— Services</td><td>25.2 KB</td><td>TramiteLicenciaService, Reportes PDF, etc.</td></tr>
+  <tr><td>&nbsp;&nbsp;— Bootstrap (lib, wwwroot)</td><td>8.28 MB</td><td>Framework CSS/JS para UI</td></tr>
+  <tr><td><strong>GestionLicencias.Web</strong></td><td>129.4 KB</td><td>Componentes Razor, layouts, config</td></tr>
+  <tr><td>&nbsp;&nbsp;— Componentes Razor</td><td>124.8 KB</td><td>Pages, Layout, Shared</td></tr>
+  <tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>8.61 MB</strong></td><td><strong>Sin directorio de build (bin/obj)</strong></td></tr>
+</table>
+
+<!-- ARCHIVOS MÁS PESADOS -->
+<h2>3. Archivos Más Pesados (Top 15)</h2>
+<table>
+  <tr><th>#</th><th>Archivo</th><th>Tamaño</th><th>Capa</th></tr>
+  <tr><td>1</td><td>bootstrap.css.map</td><td>663.8 KB</td><td>Bootstrap (lib)</td></tr>
+  <tr><td>2</td><td>bootstrap.rtl.css.map</td><td>663.7 KB</td><td>Bootstrap (lib)</td></tr>
+  <tr><td>3</td><td>bootstrap.min.css.map</td><td>576.1 KB</td><td>Bootstrap (lib)</td></tr>
+  <tr><td>4</td><td>bootstrap.bundle.js.map</td><td>434.2 KB</td><td>Bootstrap (lib)</td></tr>
+  <tr><td>5</td><td><strong>LicenciasList.razor</strong></td><td><strong>52.7 KB</strong></td><td>Web (código propio)</td></tr>
+  <tr><td>6</td><td>gestionlicencias.db</td><td>36.0 KB</td><td>SQLite (datos)</td></tr>
+  <tr><td>7</td><td><strong>app.css</strong></td><td><strong>31.7 KB</strong></td><td>Web (estilos propio)</td></tr>
+  <tr><td>8</td><td><strong>LicenciasForm.razor</strong></td><td><strong>22.1 KB</strong></td><td>Web (código propio)</td></tr>
+  <tr><td>9</td><td>bootstrap-reboot.css</td><td>11.8 KB</td><td>Bootstrap (lib)</td></tr>
+  <tr><td>10</td><td>REPORTE_TECNICO.md</td><td>9.6 KB</td><td>Documentación</td></tr>
+  <tr><td>11</td><td>Migration.Designer (6 archivos)</td><td>~44 KB total</td><td>Infrastructure</td></tr>
+  <tr><td>12</td><td>Usuarios.razor</td><td>7.6 KB</td><td>Web (código propio)</td></tr>
+  <tr><td>13</td><td>Catalogos.cs</td><td>7.0 KB</td><td>Core</td></tr>
+  <tr><td>14</td><td>charts.js</td><td>5.8 KB</td><td>Web (JS propio)</td></tr>
+  <tr><td>15</td><td>NavMenu.razor.css</td><td>5.3 KB</td><td>Web (estilos propio)</td></tr>
+</table>
+
+<!-- PAQUETES NUGET -->
+<h2>4. Paquetes NuGet (Dependencias)</h2>
+<table>
+  <tr><th>Paquete</th><th>Versión</th><th>Capa</th><th>Uso</th></tr>
+  <tr class="highlight"><td>Microsoft.EntityFrameworkCore.Sqlite</td><td>10.0.9</td><td>Infrastructure</td><td>Proveedor SQLite para ORM</td></tr>
+  <tr><td>Microsoft.EntityFrameworkCore.Design</td><td>10.0.9</td><td>Web (design-time)</td><td>Migraciones (dotnet ef)</td></tr>
+  <tr><td>Microsoft.Extensions.Configuration.Abstractions</td><td>10.0.9</td><td>Infrastructure</td><td>Abstracción IConfiguration</td></tr>
+  <tr><td>Microsoft.Extensions.Logging.Abstractions</td><td>10.0.9</td><td>Infrastructure</td><td>Abstracción ILogger</td></tr>
+  <tr class="highlight"><td>QuestPDF</td><td>2026.6.0</td><td>Infrastructure</td><td>Generación de PDFs (Community License)</td></tr>
+</table>
+
+<!-- REFERENCIAS ENTRE PROYECTOS -->
+<h2>5. Referencias entre Proyectos</h2>
+<table>
+  <tr><th>Origen</th><th>→</th><th>Destino</th><th>Tipo</th></tr>
+  <tr><td>GestionLicencias.Web</td><td>→</td><td>GestionLicencias.Infrastructure</td><td>ProjectReference</td></tr>
+  <tr><td>GestionLicencias.Infrastructure</td><td>→</td><td>GestionLicencias.Core</td><td>ProjectReference</td></tr>
+</table>
+
+<!-- CONFIGURACIÓN -->
+<h2>6. Configuración del Sistema</h2>
+<table>
+  <tr><th>Parámetro</th><th>Valor</th></tr>
+  <tr><td>Target Framework</td><td><span class="badge badge-blue">net10.0</span></td></tr>
+  <tr><td>Base de datos</td><td>SQLite — archivo <span class="code">gestionlicencias.db</span></td></tr>
+  <tr><td>Puerto HTTP</td><td><span class="code">http://localhost:5029</span></td></tr>
+  <tr><td>Puerto HTTPS</td><td><span class="code">https://localhost:7189</span></td></tr>
+  <tr><td>Environment</td><td>Development</td></tr>
+  <tr><td>AllowedHosts</td><td>*</td></tr>
+  <tr><td>Logging Default</td><td>Information</td></tr>
+  <tr><td>Logging ASP.NET</td><td>Warning</td></tr>
+  <tr><td>Licencia QuestPDF</td><td>Community (gratuita)</td></tr>
+</table>
+
+<!-- SERVICIOS DI -->
+<h2>7. Servicios Registrados (Inyección de Dependencias)</h2>
+<table>
+  <tr><th>Servicio</th><th>Vida</th><th>Detalle</th></tr>
+  <tr><td><span class="code">GestionLicenciasDbContext</span></td><td>Scoped</td><td>EF Core — SQLite connection</td></tr>
+  <tr><td><span class="code">TramiteLicenciaService</span></td><td>Scoped</td><td>Lógica de negocio — trámites de licencia</td></tr>
+  <tr><td><span class="code">ITramiteService&lt;TramiteLicencia&gt;</span></td><td>Scoped</td><td>Fábrica delegada al servicio concreto</td></tr>
+  <tr><td><span class="code">UsuarioService</span></td><td>Scoped</td><td>Gestión de usuarios, hashing, autenticación</td></tr>
+  <tr><td><span class="code">SesionUsuario</span></td><td>Scoped</td><td>Estado de sesión del usuario conectado</td></tr>
+</table>
+
+<!-- MIDDLEWARE -->
+<h2>8. Pipeline de Middleware (7 componentes)</h2>
+<table>
+  <tr><th>#</th><th>Middleware</th><th>Condición</th></tr>
+  <tr><td>1</td><td>UseExceptionHandler("/Error")</td><td>Solo Production</td></tr>
+  <tr><td>2</td><td>UseHsts()</td><td>Solo Production</td></tr>
+  <tr><td>3</td><td>UseStatusCodePagesWithReExecute("/not-found")</td><td>Siempre</td></tr>
+  <tr><td>4</td><td>UseHttpsRedirection()</td><td>Siempre</td></tr>
+  <tr><td>5</td><td>UseAntiforgery()</td><td>Siempre</td></tr>
+  <tr><td>6</td><td>MapStaticAssets()</td><td>Siempre</td></tr>
+  <tr><td>7</td><td>MapRazorComponents&lt;App&gt;().AddInteractiveServerRenderMode()</td><td>Siempre</td></tr>
+</table>
+
+<!-- SEED DATA -->
+<h2>9. Datos Iniciales (Seed Data)</h2>
+<h3>Usuarios (3)</h3>
+<table>
+  <tr><th>Usuario</th><th>Rol</th><th>Contraseña</th></tr>
+  <tr><td>admin</td><td>Administrador</td><td>admin123</td></tr>
+  <tr><td>director</td><td>Director</td><td>director123</td></tr>
+  <tr><td>jefatura</td><td>Jefatura</td><td>jefatura123</td></tr>
+</table>
+<h3>Trámites de prueba</h3>
+<table>
+  <tr><th>RUT</th><th>Descripción</th></tr>
+  <tr><td>19.336.934-0</td><td>Registro de prueba</td></tr>
+  <tr><td>20.761.157-3</td><td>Registro de prueba</td></tr>
+</table>
+
+<!-- ENTIDAD PRINCIPAL -->
+<h2>10. Entidad Principal — TramiteLicencia (38 columnas)</h2>
+<table>
+  <tr><th>#</th><th>Campo</th><th>Tipo</th><th>Descripción</th></tr>
+  <tr><td>1</td><td>Nombre</td><td>string</td><td>Nombre del contribuyente</td></tr>
+  <tr><td>2</td><td>Apellido</td><td>string</td><td>Apellido del contribuyente</td></tr>
+  <tr><td>3</td><td>RUT</td><td>string</td><td>RUT chileno</td></tr>
+  <tr><td>4</td><td>FechaCitacion</td><td>DateTime?</td><td>Fecha de citación</td></tr>
+  <tr><td>5</td><td>Telefono</td><td>string</td><td>Teléfono (+56 format)</td></tr>
+  <tr><td>6</td><td>Email</td><td>string</td><td>Correo electrónico</td></tr>
+  <tr><td>7</td><td>LugarAtencion</td><td>string</td><td>PLACILLA / AV. ARGENTINA / MERCADO PUERTO</td></tr>
+  <tr><td>8</td><td>Asiste</td><td>string</td><td>SI/NO — asistencia a citación</td></tr>
+  <tr><td>9</td><td>FechaUltimaCarpeta</td><td>DateTime?</td><td>Fecha última carpeta física</td></tr>
+  <tr><td>10</td><td>EstadoCarpeta</td><td>string</td><td>Estado de la carpeta</td></tr>
+  <tr><td>11</td><td>CambioDomicilioPedido</td><td>string</td><td>SI/NO — cambio de domicilio</td></tr>
+  <tr><td>12</td><td>CiudadCambioDomicilio</td><td>string</td><td>Ciudad destino (346 ciudades)</td></tr>
+  <tr><td>13</td><td>FechaDigitalizacionCarpeta</td><td>DateTime?</td><td>Fecha de digitalización</td></tr>
+  <tr class="highlight"><td>14</td><td>FechaSubidaConaset</td><td>DateTime?</td><td><strong>NUEVO:</strong> auto-set al "SUBIDA A CONASET"</td></tr>
+  <tr class="highlight"><td>15</td><td>CarpetaPedida</td><td>string</td><td><strong>NUEVO:</strong> SI/NO</td></tr>
+  <tr><td>16</td><td>IdoneidadMoral</td><td>string</td><td>Idoneidad moral</td></tr>
+  <tr><td>17</td><td>Contactado</td><td>string</td><td>SI/NO</td></tr>
+  <tr><td>18</td><td>Notificado</td><td>string</td><td>SI/NO</td></tr>
+  <tr><td>19</td><td>LugarOrigenCambioDomicilio</td><td>string</td><td>Lugar de origen</td></tr>
+  <tr><td>20</td><td>PeticionCambioDomicilio</td><td>string</td><td>SI/NO</td></tr>
+  <tr><td>21</td><td>CambioDomicilioPedidoPor</td><td>string</td><td>Quién pidió el cambio</td></tr>
+  <tr><td>22</td><td>FolioF8</td><td>string</td><td>Folio del F8</td></tr>
+  <tr><td>23</td><td>FechaPenultimaCarpeta</td><td>DateTime?</td><td>Fecha penúltima carpeta</td></tr>
+  <tr><td>24</td><td>EstadoF8</td><td>string</td><td>Estado del F8</td></tr>
+  <tr><td>25</td><td>Otorgamiento</td><td>string</td><td>OTORGADO / DENEGADO / ESPERA EXAMEN</td></tr>
+  <tr><td>26</td><td>FolioLicencia</td><td>string</td><td>Folio de licencia</td></tr>
+  <tr><td>27</td><td>FechaImpresion</td><td>DateTime?</td><td>Fecha de impresión</td></tr>
+  <tr><td>28</td><td>ImpresaPor</td><td>string</td><td>Quién imprimió</td></tr>
+  <tr><td>29</td><td>BajadaAPam</td><td>string</td><td>SI/NO</td></tr>
+  <tr><td>30</td><td>BajadaPor</td><td>string</td><td>Quién bajó a PAM</td></tr>
+  <tr><td>31</td><td>FechaRecepcionPam</td><td>DateTime?</td><td>Fecha recepción PAM</td></tr>
+  <tr><td>32</td><td>RecibidaEnPamPor</td><td>string</td><td>Quién recibió en PAM</td></tr>
+  <tr><td>33</td><td>ContactadoParaEntrega</td><td>string</td><td>SI/NO</td></tr>
+  <tr><td>34</td><td>FechaEntrega</td><td>DateTime?</td><td>Fecha de entrega</td></tr>
+  <tr><td>35</td><td>Sexo</td><td>string</td><td>Sexo</td></tr>
+  <tr><td>36</td><td>FechaNacimiento</td><td>DateTime?</td><td>Fecha nacimiento</td></tr>
+  <tr><td>37</td><td>TipoLicencia</td><td>string</td><td>Tipo de licencia</td></tr>
+  <tr><td>38</td><td>Observaciones</td><td>string</td><td>Observaciones</td></tr>
+</table>
+
+<!-- FUNCIONALIDADES -->
+<h2>11. Funcionalidades Implementadas</h2>
+<table>
+  <tr><th>Módulo</th><th>Funcionalidad</th><th>Estado</th></tr>
+  <tr><td>LicenciasList</td><td>Tabla paginada (50/página), inline editing</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>LicenciasForm</td><td>Formulario crear/editar con auto-asignación</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Autocomplete ciudades</td><td>346 ciudades chilenas, filtro por texto</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Toast "NO domicilio"</td><td>Aviso visual al setear NO</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>PDF modal</td><td>3 opciones + filtro TipoListado</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>FechaNacimientoSelector</td><td>Componente dedicado</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Permisos por rol</td><td>NoEdita(sección) por secciones</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Desbloquear</td><td>Botón para ADMINISTRADOR/DIRECTOR</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Exportar Excel</td><td>Genera .xls con HTML table</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Pegar desde Excel</td><td>Importación masiva desde clipboard</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Dominios de correo</td><td>Gestión de dominios sugeridos</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Estadísticas</td><td>Otorgamiento + CONASET + Carpetas pedidas</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Seguimiento</td><td>Módulo dedicado</td><td><span class="badge badge-green">OK</span></td></tr>
+  <tr><td>Login</td><td>Autenticación con sesión</td><td><span class="badge badge-green">OK</span></td></tr>
+</table>
+
+<!-- SERVICIOS BACKEND -->
+<h2>12. Servicios Backend</h2>
+<table>
+  <tr><th>Servicio</th><th>Métodos Principales</th></tr>
+  <tr><td>TramiteLicenciaService</td><td>BuscarAsync, CrearAsync, ActualizarAsync, EliminarAsync, ObtenerEstadisticasOtorgamientoAsync, ObtenerEstadisticasConasetAsync, ObtenerEstadisticasCarpetaPedidaAsync</td></tr>
+  <tr><td>UsuarioService</td><td>CRUD usuarios, hashing contraseñas</td></tr>
+  <tr><td>BaseTramiteService&lt;T&gt;</td><td>CRUD genérico para trámites</td></tr>
+  <tr><td>ReporteCarpetasPdf</td><td>Genera PDF de carpetas (última/penúltima)</td></tr>
+  <tr><td>ReporteImpresasPdf</td><td>Genera PDF de impresas por lugar/funcionaria</td></tr>
+  <tr><td>LogoValpo</td><td>Logo de la municipalidad para PDFs</td></tr>
+</table>
+
+<!-- MIGRACIONES -->
+<h2>13. Migraciones EF Core (5)</h2>
+<table>
+  <tr><th>#</th><th>Nombre</th><th>Fecha</th><th>Tamaño</th></tr>
+  <tr><td>1</td><td>InitialCreate</td><td>11/06/2026</td><td>10.5 KB</td></tr>
+  <tr><td>2</td><td>AgregarDatosPersonales</td><td>11/06/2026</td><td>7.7 KB</td></tr>
+  <tr><td>3</td><td>AgregarCambioDomicilioPedidoYCiudad</td><td>12/06/2026</td><td>7.7 KB</td></tr>
+  <tr><td>4</td><td>SincronizarModelo</td><td>12/06/2026</td><td>10.8 KB</td></tr>
+  <tr><td>5</td><td>AgregarSubidaConasetYPedida</td><td>16/06/2026</td><td>9.8 KB</td></tr>
+</table>
+
+<!-- GITIGNORE -->
+<h2>14. Archivos Excluidos (.gitignore)</h2>
+<div class="arch-box">
+  <strong>Excluidos:</strong> bin/, obj/, publish/, .vs/, .vscode/, .idea/, *.user, *.suo, *.db, *.db-shm, *.db-wal, *.log, .atl/
+</div>
+
+<!-- STACK TECNOLÓGICO -->
+<h2>15. Stack Tecnológico</h2>
+<table>
+  <tr><th>Capa</th><th>Tecnología</th><th>Versión</th></tr>
+  <tr><td>Runtime</td><td>.NET</td><td>10.0</td></tr>
+  <tr><td>Frontend</td><td>Blazor Server (Razor Components)</td><td>Interactive Server</td></tr>
+  <tr><td>ORM</td><td>Entity Framework Core</td><td>10.0.9</td></tr>
+  <tr><td>Base de datos</td><td>SQLite</td><td>File-based</td></tr>
+  <tr><td>PDF</td><td>QuestPDF</td><td>2026.6.0</td></tr>
+  <tr><td>CSS Framework</td><td>Bootstrap</td><td>5.x</td></tr>
+  <tr><td>Autenticación</td><td>Custom (SesionUsuario + AuthGuard)</td><td>—</td></tr>
+  <tr><td>Estado</td><td>Scoped services</td><td>—</td></tr>
+  <tr><td>Build</td><td>MSBuild / dotnet CLI</td><td>—</td></tr>
+</table>
+
+<!-- CONCLUSIÓN -->
+<h2>16. Conclusión</h2>
+<div class="arch-box">
+  <p><strong>Proyecto liviano y eficiente:</strong> El código propio del sistema pesa apenas <strong>~350 KB</strong> (Core + Infrastructure + Web components). El peso total de 8.61 MB se debe principalmente a Bootstrap (8.28 MB), que es una dependencia estática del frontend.</p>
+  <p style="margin-top:8px;"><strong>Dependencias mínimas:</strong> Solo 4 paquetes NuGet en runtime. Sin microservicios, sin Docker, sin Redis, sin colas de mensajes. Todo corre en un solo proceso Blazor Server con SQLite local.</p>
+  <p style="margin-top:8px;"><strong>Escala:</strong> La base de datos SQLite actual pesa 36 KB con datos de prueba. El sistema está diseñado para uso municipal local (una oficina).</p>
+</div>
+
+<div class="footer">
+  Reporte generado el 16/06/2026 — Gestión de Licencias de Conducir v3 — Municipalidad de Valparaíso
+</div>
+
+</body>
+</html>
