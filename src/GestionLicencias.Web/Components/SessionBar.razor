@@ -1,0 +1,36 @@
+@rendermode InteractiveServer
+@inject SesionUsuario Sesion
+@inject NavigationManager Nav
+
+@*
+    Interactive island shown in the layout top bar: identifies the connected
+    user and exposes the user-administration shortcut (privileged roles only)
+    and the logout action.
+*@
+
+@if (_usuario is not null)
+{
+    <span class="ta-session-user" style="font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:.06em;color:var(--ta-on-surface-variant);">@_usuario.NombreCompleto — @_usuario.Rol</span>
+    @if (Roles.EsPrivilegiado(_usuario.Rol))
+    {
+        <a class="f8-btn" href="/admin/usuarios">Usuarios</a>
+    }
+    <button class="f8-btn" @onclick="Cerrar">Cerrar sesión</button>
+}
+
+@code {
+    private SesionUsuario.Info? _usuario;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        _usuario = await Sesion.CargarAsync();
+        StateHasChanged();
+    }
+
+    private async Task Cerrar()
+    {
+        await Sesion.CerrarAsync();
+        Nav.NavigateTo("/login", true);
+    }
+}

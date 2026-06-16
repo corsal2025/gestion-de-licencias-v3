@@ -96,9 +96,10 @@
                                     </select>
                                 </td>
                                 <td>
-                                    <select class="ta-cell ta-w-sm @(u.Activo ? "ta-si" : "ta-no")" @bind="u.Activo">
-                                        <option value="true">SI</option>
-                                        <option value="false">NO</option>
+                                    <select class="ta-cell ta-w-sm @(u.Activo ? "ta-si" : "ta-no")"
+                                            value="@SiNo(u.Activo)" @onchange="e => CambiarActivo(u, e)">
+                                        <option value="SI">SI</option>
+                                        <option value="NO">NO</option>
                                     </select>
                                 </td>
                                 <td><input type="password" class="ta-cell ta-w-md" placeholder="(sin cambio)" @bind="ClavesNuevas[u.Id]" /></td>
@@ -167,6 +168,14 @@
             await CargarLista();
         }
     }
+
+    // Bool-bound <select> shows blank in Blazor because .NET formats a bool as
+    // "True"/"False" while the options used "true"/"false" — case never matched.
+    // Manual string binding (SI/NO) sidesteps the formatter entirely.
+    private static string SiNo(bool valor) => valor ? "SI" : "NO";
+
+    private void CambiarActivo(Usuario u, ChangeEventArgs e) =>
+        u.Activo = (e.Value as string) == "SI";
 
     private async Task Guardar(Usuario u)
     {

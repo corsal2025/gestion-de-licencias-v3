@@ -1,9 +1,11 @@
 @page "/"
+@rendermode InteractiveServer
 @inject ITramiteService<TramiteLicencia> ModuloService
 @inject TramiteLicenciaService StatsService
 
 <PageTitle>Dashboard — Gestión de Licencias</PageTitle>
 
+<AuthGuard>
 <div class="home-hero">
     <h1>Seguimiento de Trámites</h1>
     <p>
@@ -27,6 +29,7 @@
 
     <a class="btn btn-primary" href="modulos/licencias">Abrir módulo de licencias</a>
 </div>
+</AuthGuard>
 
 @code {
     private int Total;

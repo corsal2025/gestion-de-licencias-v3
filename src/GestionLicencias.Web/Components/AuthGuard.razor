@@ -1,0 +1,69 @@
+@inject SesionUsuario Sesion
+@inject NavigationManager Nav
+
+@*
+    Wraps a page's content and only renders it once a valid session is
+    confirmed. ProtectedLocalStorage is only readable after the first
+    interactive render, so the check runs in OnAfterRenderAsync — the same
+    proven pattern used by the user administration page.
+*@
+
+@if (_verificada)
+{
+    @ChildContent
+}
+else
+{
+    <div class="f8-wrapper">
+        <p style="padding:1rem;">Verificando sesión...</p>
+    </div>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>When true, only ADMINISTRADOR/DIRECTOR/JEFATURA may stay on the page.</summary>
+    [Parameter] public bool RequierePrivilegio { get; set; }
+
+    /// <summary>
+    /// Fired once, after the guarded content has actually rendered into the DOM.
+    /// Use it for work that needs the rendered elements (e.g. JS chart rendering
+    /// that looks up canvases by id), which would otherwise run too early.
+    /// </summary>
+    [Parameter] public EventCallback OnAutorizado { get; set; }
+
+    private bool _verificada;
+    private bool _notificado;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_verificada)
+        {
+            if (!firstRender) return;
+
+            var actual = await Sesion.CargarAsync();
+            if (actual is null)
+            {
+                Nav.NavigateTo("/login", true);
+                return;
+            }
+            if (RequierePrivilegio && !Sesion.EsPrivilegiado)
+            {
+                Nav.NavigateTo("/modulos/licencias", true);
+                return;
+            }
+
+            _verificada = true;
+            StateHasChanged();
+            return;
+        }
+
+        // The guarded content is in the DOM now — run post-reveal work once.
+        if (!_notificado)
+        {
+            _notificado = true;
+            if (OnAutorizado.HasDelegate)
+                await OnAutorizado.InvokeAsync();
+        }
+    }
+}
