@@ -1,8 +1,9 @@
-@page "/modulos/licencias/crear"
+﻿@page "/modulos/licencias/crear"
 @page "/modulos/licencias/editar/{Id:int}"
 @rendermode InteractiveServer
 @inject ITramiteService<TramiteLicencia> ModuloService
 @inject NavigationManager Nav
+@inject SesionUsuario Sesion
 
 <PageTitle>@(Id == 0 ? "Nuevo registro" : "Editar registro") — MODELO POWERBI</PageTitle>
 
@@ -13,6 +14,13 @@
             <button class="f8-btn" @onclick="Volver">Volver a la lista</button>
         </div>
     </div>
+
+    @if (MostrarToastDomicilio)
+    {
+        <div class="f8-toast" @onanimationend="() => MostrarToastDomicilio = false">
+            AVISO: Se ha registrado que NO se solicita cambio de domicilio para este registro.
+        </div>
+    }
 
     @if (!string.IsNullOrEmpty(Mensaje))
     {
@@ -46,7 +54,7 @@
                 </div>
                 <div class="f8-field">
                     <label>FECHA DE LA CITACIÓN</label>
-                    <input type="date" @bind="Modelo.FechaCitacion" />
+                    <input type="date" @bind="Modelo.FechaCitacion" @bind:format="yyyy-MM-dd" />
                 </div>
                 <div class="f8-field">
                     <label>TELÉFONO</label>
@@ -79,20 +87,12 @@
             </div>
         </fieldset>
 
-        @if (Modelo.ProcesoBloqueado)
-        {
-            <div class="f8-msg f8-msg-error">
-                ⛔ PROCESO BLOQUEADO: el contribuyente NO ASISTIÓ a la citación.
-                Debe realizar el trámite nuevamente desde cero (crear un nuevo registro).
-            </div>
-        }
-
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset>
             <legend>Carpeta</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
                     <label>FECHA ÚLTIMA CARPETA</label>
-                    <input type="date" @bind="Modelo.FechaUltimaCarpeta" />
+                    <input type="date" @bind="Modelo.FechaUltimaCarpeta" @bind:format="yyyy-MM-dd" @bind:after="ActualizarEstadoCarpeta" />
                 </div>
                 <div class="f8-field">
                     <label>ESTADO DE LA CARPETA</label>
@@ -106,7 +106,7 @@
                 </div>
                 <div class="f8-field">
                     <label>CAMBIO DE DOMICILIO PEDIDO</label>
-                    <select @bind="Modelo.CambioDomicilioPedido" disabled="@(!Modelo.CambioDomicilioActivo)">
+                    <select @bind="Modelo.CambioDomicilioPedido" @bind:after="OnCambioDomicilioPedidoChanged" disabled="@(!Modelo.CambioDomicilioActivo)">
                         <option value="">—</option>
                         @foreach (var v in Catalogos.SiNo)
                         {
@@ -116,18 +116,51 @@
                 </div>
                 <div class="f8-field">
                     <label>CIUDADES</label>
-                    <select @bind="Modelo.CiudadCambioDomicilio" disabled="@(!Modelo.CambioDomicilioActivo)">
+                    <div class="ta-autocomplete">
+                        <input placeholder="Buscar ciudad..."
+                               value="@(Modelo.CiudadCambioDomicilio ?? "")"
+                               disabled="@(!Modelo.CambioDomicilioActivo)"
+                               @oninput="FiltrarCiudadForm"
+                               @onfocus="() => CiudadFormAbierto = true" />
+                        @if (CiudadFormAbierto && Modelo.CambioDomicilioActivo)
+                        {
+                            var opciones = FiltrarCiudades(FiltroCiudadForm);
+                            if (opciones.Length > 0)
+                            {
+                                <div class="ta-autocomplete-list">
+                                    @foreach (var c in opciones)
+                                    {
+                                        <div @onclick="() => SeleccionarCiudadForm(c)">@c</div>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+                <div class="f8-field">
+                    <label>FECHA DIGITALIZACIÓN CARPETA</label>
+                    <input type="date" @bind="Modelo.FechaDigitalizacionCarpeta" @bind:format="yyyy-MM-dd" />
+                </div>
+                <div class="f8-field">
+                    <label>FECHA SUBIDA A CONASET</label>
+                    <input type="date" @bind="Modelo.FechaSubidaConaset" @bind:format="yyyy-MM-dd" readonly class="ta-cell-readonly" />
+                </div>
+                <div class="f8-field">
+                    <label>CARPETA PEDIDA</label>
+                    <select @bind="Modelo.CarpetaPedida">
                         <option value="">—</option>
-                        @foreach (var v in Catalogos.CiudadesChile)
+                        @foreach (var v in Catalogos.SiNo)
                         {
                             <option value="@v">@v</option>
                         }
                     </select>
                 </div>
-                <div class="f8-field">
-                    <label>FECHA DIGITALIZACIÓN CARPETA</label>
-                    <input type="date" @bind="Modelo.FechaDigitalizacionCarpeta" />
-                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Idoneidad moral</legend>
+            <div class="f8-form-grid">
                 <div class="f8-field">
                     <label>IDONEIDAD MORAL</label>
                     <select @bind="Modelo.IdoneidadMoral">
@@ -161,7 +194,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset>
             <legend>Cambio de domicilio</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -191,7 +224,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset>
             <legend>F8</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -200,11 +233,11 @@
                 </div>
                 <div class="f8-field">
                     <label>FECHA PENÚLTIMA CARPETA</label>
-                    <input type="date" @bind="Modelo.FechaPenultimaCarpeta" />
+                    <input type="date" @bind="Modelo.FechaPenultimaCarpeta" @bind:format="yyyy-MM-dd" />
                 </div>
                 <div class="f8-field">
                     <label>ESTADO DEL F8</label>
-                    <select @bind="Modelo.EstadoF8">
+                    <select value="@Modelo.EstadoF8" @onchange="OnEstadoF8Changed">
                         <option value="">—</option>
                         @foreach (var v in Catalogos.EstadosF8)
                         {
@@ -215,7 +248,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset>
             <legend>Otorgamiento e impresión</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -234,7 +267,7 @@
                 </div>
                 <div class="f8-field">
                     <label>FECHA IMPRESIÓN</label>
-                    <input type="date" @bind="Modelo.FechaImpresion" />
+                    <input type="date" @bind="Modelo.FechaImpresion" @bind:format="yyyy-MM-dd" />
                 </div>
                 <div class="f8-field">
                     <label>IMPRESA POR</label>
@@ -249,7 +282,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@Modelo.ProcesoBloqueado">
+        <fieldset>
             <legend>PAM y entrega</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -268,7 +301,7 @@
                 </div>
                 <div class="f8-field">
                     <label>FECHA RECEPCIÓN PAM</label>
-                    <input type="date" @bind="Modelo.FechaRecepcionPam" />
+                    <input type="date" @bind="Modelo.FechaRecepcionPam" @bind:format="yyyy-MM-dd" />
                 </div>
                 <div class="f8-field">
                     <label>RECIBIDA EN PAM POR</label>
@@ -292,7 +325,7 @@
                 </div>
                 <div class="f8-field">
                     <label>FECHA DE ENTREGA</label>
-                    <input type="date" @bind="Modelo.FechaEntrega" />
+                    <input type="date" @bind="Modelo.FechaEntrega" @bind:format="yyyy-MM-dd" />
                 </div>
             </div>
         </fieldset>
@@ -312,7 +345,7 @@
                 </div>
                 <div class="f8-field">
                     <label>FECHA DE NACIMIENTO</label>
-                    <input type="date" @bind="Modelo.FechaNacimiento" />
+                    <FechaNacimientoSelector @bind-value="Modelo.FechaNacimiento" />
                 </div>
                 <div class="f8-field">
                     <label>EDAD</label>
@@ -355,6 +388,13 @@
     private string Mensaje = "";
     private bool EsError = false;
     private bool Guardando = false;
+    private bool MostrarToastDomicilio = false;
+    private bool CiudadFormAbierto = false;
+    private string FiltroCiudadForm = "";
+
+    /// <summary>Fecha máxima para nacimiento: 17 años atrás desde hoy.</summary>
+    private string MaxFechaNacimiento => DateTime.Today.AddYears(-17).ToString("yyyy-MM-dd");
+
 
     protected override async Task OnParametersSetAsync()
     {
@@ -384,27 +424,15 @@
     private static string NormalizarTelefono(string? telefono)
     {
         var t = (telefono ?? "").Trim();
-        if (t.Length == 0 || t.StartsWith("+56")) return t;
-        t = t.TrimStart('+');
-        if (t.StartsWith("56") && t.Length > 9) return "+" + t;
-        return "+56 " + t;
+        if (t.Length == 0) return t;
+        var digits = System.Text.RegularExpressions.Regex.Replace(t, @"\D", "");
+        if (digits.StartsWith("56") && digits.Length > 9)
+            digits = digits[2..];
+        return $"+56 - {digits}";
     }
 
     private void OnAsisteChanged()
     {
-        if (Modelo is null) return;
-        if (Modelo.ProcesoBloqueado)
-        {
-            Modelo.Estado = "BLOQUEADO - NO ASISTIÓ";
-            Mensaje = "Proceso bloqueado por inasistencia: el contribuyente debe realizar el trámite nuevamente desde cero.";
-            EsError = true;
-        }
-        else if (Modelo.Estado == "BLOQUEADO - NO ASISTIÓ")
-        {
-            Modelo.Estado = "En Proceso";
-            Mensaje = "";
-            EsError = false;
-        }
     }
 
     private void OnLugarAtencionChanged()
@@ -418,10 +446,89 @@
     private void OnEstadoCarpetaChanged()
     {
         if (Modelo is null) return;
+        if (Modelo.EstadoCarpeta == "SUBIDA A CONASET")
+            Modelo.FechaSubidaConaset = DateTime.Today;
+        else
+            Modelo.FechaSubidaConaset = null;
+
         if (!Modelo.CambioDomicilioActivo)
         {
             Modelo.CambioDomicilioPedido = null;
             Modelo.CiudadCambioDomicilio = null;
+        }
+    }
+
+    private async Task OnCambioDomicilioPedidoChanged()
+    {
+        if (Modelo is null) return;
+        if (Modelo.CambioDomicilioPedido == "NO")
+        {
+            MostrarToastDomicilio = true;
+            StateHasChanged();
+            await Task.Delay(4000);
+            MostrarToastDomicilio = false;
+            StateHasChanged();
+        }
+    }
+
+    private static string[] FiltrarCiudades(string filtro)
+    {
+        if (string.IsNullOrWhiteSpace(filtro))
+            return Catalogos.CiudadesChile.Take(20).ToArray();
+        return Catalogos.CiudadesChile
+            .Where(c => c.Contains(filtro.ToUpperInvariant()))
+            .Take(20)
+            .ToArray();
+    }
+
+    private void FiltrarCiudadForm(ChangeEventArgs e)
+    {
+        FiltroCiudadForm = e.Value?.ToString() ?? "";
+        CiudadFormAbierto = true;
+    }
+
+    private void SeleccionarCiudadForm(string ciudad)
+    {
+        if (Modelo is null) return;
+        Modelo.CiudadCambioDomicilio = ciudad;
+        Modelo.LugarOrigenCambioDomicilio = ciudad;
+        CiudadFormAbierto = false;
+        FiltroCiudadForm = "";
+    }
+
+    private void ActualizarEstadoCarpeta()
+    {
+        if (Modelo is null) return;
+        Modelo.EstadoCarpeta = Modelo.FechaUltimaCarpeta.HasValue
+            && Modelo.FechaUltimaCarpeta.Value >= new DateTime(2023, 7, 1)
+                ? "SE ENCUENTRA EN OF.43"
+                : "SE ENCUENTRA EN ARCHIVOS";
+
+        if (Modelo.EstadoCarpeta == "SUBIDA A CONASET")
+            Modelo.FechaSubidaConaset = DateTime.Today;
+        else
+            Modelo.FechaSubidaConaset = null;
+
+        if (!Modelo.CambioDomicilioActivo)
+        {
+            Modelo.CambioDomicilioPedido = null;
+            Modelo.CiudadCambioDomicilio = null;
+        }
+    }
+
+    private void OnEstadoF8Changed(ChangeEventArgs e)
+    {
+        if (Modelo is null) return;
+        Modelo.EstadoF8 = e.Value?.ToString() ?? "";
+        
+        if (Modelo.EstadoF8 == "SUBIDA A CONASET")
+        {
+            Modelo.EstadoCarpeta = "SUBIDA CON F8";
+            Modelo.FechaSubidaConaset = DateTime.Today;
+        }
+        else
+        {
+            Modelo.FechaSubidaConaset = null;
         }
     }
 
@@ -442,6 +549,8 @@
         Guardando = true;
         try
         {
+            // Stamp the connected user for the audit trail (the guard guarantees one).
+            Modelo.UsuarioId = Sesion.Actual?.NombreUsuario ?? "SISTEMA";
             if (Id == 0)
                 await ModuloService.CrearAsync(Modelo);
             else

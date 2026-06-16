@@ -25,26 +25,35 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: .6rem;
+    gap: .5rem;
+    text-decoration: none;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .ta-logo-chip {
     background: #ffffff;
-    border-radius: 4px;
-    padding: 3px 5px;
+    border-radius: 6px;
+    padding: 4px 6px;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .ta-logo-chip img {
-    height: 34px;
+    height: 32px;
+    width: auto;
     display: block;
 }
 
 .ta-brand-text {
     display: flex;
     flex-direction: column;
-    gap: .1rem;
+    gap: .15rem;
+    justify-content: center;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .ta-brand-title {
@@ -53,13 +62,17 @@
     font-size: .82rem;
     letter-spacing: .08em;
     color: var(--ta-on-surface);
+    white-space: nowrap;
+    line-height: 1.2;
 }
 
 .ta-brand-sub {
     font-family: 'JetBrains Mono', monospace;
-    font-size: .6rem;
-    letter-spacing: .05em;
+    font-size: .58rem;
+    letter-spacing: .04em;
     color: var(--ta-on-surface-variant);
+    white-space: nowrap;
+    line-height: 1.2;
 }
 
 .bi {

@@ -1,0 +1,123 @@
+@* Selector de fecha de nacimiento con restricción de 17 años mínimos *@
+
+<div class="fecha-nac-row">
+    <select class="fecha-nac-select" value="@DiaSeleccionado" @onchange="OnDiaChanged" disabled="@(!MesSeleccionado.HasValue)">
+        <option value="">DÍA</option>
+        @foreach (var d in DiasDisponibles)
+        {
+            <option value="@d">@d</option>
+        }
+    </select>
+
+    <select class="fecha-nac-select" value="@MesSeleccionado" @onchange="OnMesChanged" disabled="@(!AnioSeleccionado.HasValue)">
+        <option value="">MES</option>
+        @for (int m = 1; m <= 12; m++)
+        {
+            <option value="@m">@MesNombre(m)</option>
+        }
+    </select>
+
+    <select class="fecha-nac-select" value="@AnioSeleccionado" @onchange="OnAnioChanged">
+        <option value="">AÑO</option>
+        @foreach (var a in Anios)
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+</div>
+
+@code {
+    [Parameter] public DateTime? Value { get; set; }
+    [Parameter] public EventCallback<DateTime?> ValueChanged { get; set; }
+
+    private const int EdadMinima = 17;
+
+    private int? AnioSeleccionado;
+    private int? MesSeleccionado;
+    private int? DiaSeleccionado;
+
+    private List<int> Anios = new();
+    private List<int> DiasDisponibles = new();
+
+    protected override void OnInitialized()
+    {
+        var maxFecha = DateTime.Today.AddYears(-EdadMinima);
+        var anioMin = maxFecha.Year - 100; // máximo 100 años atrás
+        Anios = Enumerable.Range(anioMin, maxFecha.Year - anioMin + 1)
+                          .OrderByDescending(a => a).ToList();
+
+        if (Value.HasValue)
+        {
+            AnioSeleccionado = Value.Value.Year;
+            MesSeleccionado = Value.Value.Month;
+            DiaSeleccionado = Value.Value.Day;
+            ActualizarDias();
+        }
+    }
+
+    private void OnAnioChanged(ChangeEventArgs e)
+    {
+        AnioSeleccionado = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
+        MesSeleccionado = null;
+        DiaSeleccionado = null;
+        DiasDisponibles.Clear();
+        NotificarValor();
+    }
+
+    private void OnMesChanged(ChangeEventArgs e)
+    {
+        MesSeleccionado = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
+        DiaSeleccionado = null;
+        ActualizarDias();
+        NotificarValor();
+    }
+
+    private void OnDiaChanged(ChangeEventArgs e)
+    {
+        DiaSeleccionado = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
+        NotificarValor();
+    }
+
+    private void ActualizarDias()
+    {
+        if (!AnioSeleccionado.HasValue || !MesSeleccionado.HasValue)
+        {
+            DiasDisponibles.Clear();
+            return;
+        }
+
+        // Validar que no exceda la fecha máxima (hoy - 17 años)
+        var maxFecha = DateTime.Today.AddYears(-EdadMinima);
+        var diasEnMes = DateTime.DaysInMonth(AnioSeleccionado.Value, MesSeleccionado.Value);
+
+        DiasDisponibles = Enumerable.Range(1, diasEnMes).ToList();
+
+        // Si el año/mes seleccionado es igual al máximo, limitar el día
+        if (AnioSeleccionado.Value == maxFecha.Year && MesSeleccionado.Value == maxFecha.Month)
+        {
+            DiasDisponibles = DiasDisponibles.Where(d => d <= maxFecha.Day).ToList();
+        }
+    }
+
+    private void NotificarValor()
+    {
+        if (AnioSeleccionado.HasValue && MesSeleccionado.HasValue && DiaSeleccionado.HasValue)
+        {
+            var fecha = new DateTime(AnioSeleccionado.Value, MesSeleccionado.Value, DiaSeleccionado.Value);
+            Value = fecha;
+        }
+        else
+        {
+            Value = null;
+        }
+        ValueChanged.InvokeAsync(Value);
+    }
+
+    private static string MesNombre(int mes) => mes switch
+    {
+        1 => "ENE", 2 => "FEB", 3 => "MAR", 4 => "ABR",
+        5 => "MAY", 6 => "JUN", 7 => "JUL", 8 => "AGO",
+        9 => "SEP", 10 => "OCT", 11 => "NOV", 12 => "DIC",
+        _ => ""
+    };
+}

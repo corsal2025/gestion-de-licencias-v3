@@ -27,7 +27,6 @@ public static class Catalogos
         "SE ENCUENTRA EN OF.43",
         "CAMBIO DE DOMICILIO SOLICITADO",
         "CAMBIO DE DOMICILIO",
-        "NO EXISTE CARPETA",
         "CREAR OFICIO",
         "CANJE LIC. EXTRANJERA"
     ];

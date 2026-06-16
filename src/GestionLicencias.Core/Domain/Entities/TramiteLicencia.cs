@@ -108,6 +108,12 @@ public class TramiteLicencia : BaseTramite
     // Columna 36: CIUDADES — ciudad de destino del cambio de domicilio
     public string? CiudadCambioDomicilio { get; set; }
 
+    // Columna 37: FECHA SUBIDA A CONASET — se auto-calcula cuando EstadoCarpeta = "SUBIDA A CONASET"
+    public DateTime? FechaSubidaConaset { get; set; }
+
+    // Columna 38: CARPETA PEDIDA (SI/NO)
+    public string? CarpetaPedida { get; set; }
+
     // --- Bloqueo del proceso ---
 
     // Desbloqueo otorgado por ADMINISTRADOR/DIRECTOR/JEFATURA: levanta el
@@ -116,20 +122,10 @@ public class TramiteLicencia : BaseTramite
     public string? DesbloqueadoPor { get; set; }
     public DateTime? FechaDesbloqueo { get; set; }
 
-    // La idoneidad moral JUZGADO o REPROBADA detiene el proceso.
-    public bool IdoneidadBloqueante => IdoneidadMoral is "JUZGADO" or "REPROBADA";
-
-    // El proceso queda bloqueado cuando el contribuyente no asiste a la
-    // citación (debe iniciar un trámite nuevo desde cero) o cuando la
-    // idoneidad moral resulta JUZGADO/REPROBADA. Solo un desbloqueo
-    // administrativo lo levanta.
-    public bool ProcesoBloqueado =>
-        !DesbloqueoAdministrativo && (Asiste == "NO" || IdoneidadBloqueante);
-
-    public string? MotivoBloqueo =>
-        !ProcesoBloqueado ? null
-        : Asiste == "NO" ? "NO ASISTIÓ A LA CITACIÓN"
-        : $"IDONEIDAD MORAL {IdoneidadMoral}";
+    // Bloqueo de proceso deshabilitado temporalmente.
+    public bool IdoneidadBloqueante => false;
+    public bool ProcesoBloqueado => false;
+    public string? MotivoBloqueo => null;
 
     // Las columnas de cambio de domicilio en Carpeta solo se habilitan
     // con este estado exacto.

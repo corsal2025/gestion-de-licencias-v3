@@ -3,6 +3,7 @@ using System;
 using GestionLicencias.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GestionLicencias.Infrastructure.Migrations
 {
     [DbContext(typeof(GestionLicenciasDbContext))]
-    partial class GestionLicenciasDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260616153346_AgregarSubidaConasetYPedida")]
+    partial class AgregarSubidaConasetYPedida
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");

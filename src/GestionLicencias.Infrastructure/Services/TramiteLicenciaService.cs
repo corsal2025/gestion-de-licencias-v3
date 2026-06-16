@@ -43,6 +43,35 @@ public class TramiteLicenciaService : BaseTramiteService<TramiteLicencia>
             .Select(g => new { Otorgamiento = g.Key, Total = g.Count() })
             .ToDictionaryAsync(x => x.Otorgamiento, x => x.Total);
 
+    public async Task<Dictionary<string, int>> ObtenerEstadisticasConasetAsync()
+    {
+        var hoy = DateTime.Today;
+        var inicioSemana = hoy.AddDays(-(int)hoy.DayOfWeek);
+        var inicioMes = new DateTime(hoy.Year, hoy.Month, 1);
+
+        var registros = await Context.TramitesLicencia
+            .Where(t => t.Activo && t.FechaSubidaConaset.HasValue)
+            .Select(t => new { t.FechaSubidaConaset })
+            .ToListAsync();
+
+        return new Dictionary<string, int>
+        {
+            ["Subidas CONASET hoy"] = registros.Count(r => r.FechaSubidaConaset!.Value.Date == hoy),
+            ["Subidas CONASET semana"] = registros.Count(r => r.FechaSubidaConaset!.Value >= inicioSemana),
+            ["Subidas CONASET mes"] = registros.Count(r => r.FechaSubidaConaset!.Value >= inicioMes)
+        };
+    }
+
+    public async Task<Dictionary<string, int>> ObtenerEstadisticasCarpetaPedidaAsync()
+    {
+        var total = await Context.TramitesLicencia
+            .CountAsync(t => t.Activo && t.CarpetaPedida == "SI");
+        return new Dictionary<string, int>
+        {
+            ["Carpetas pedidas"] = total
+        };
+    }
+
     public async Task<EstadisticasModelo> ObtenerEstadisticasModeloAsync()
     {
         var datos = await Context.TramitesLicencia

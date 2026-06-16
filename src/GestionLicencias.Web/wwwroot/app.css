@@ -115,10 +115,12 @@ h1:focus {
 
 .f8-topbar h2 {
     margin: 0;
-    font-size: 1.35rem;
+    font-size: 1.6rem;
     font-weight: 700;
     letter-spacing: .06em;
     text-transform: uppercase;
+    width: 100%;
+    text-align: center;
 }
 
 .f8-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
@@ -174,6 +176,7 @@ h1:focus {
     text-transform: uppercase;
     color: var(--ta-on-surface-variant);
     min-width: 110px;
+    text-align: center;
 }
 
 .f8-stat strong {
@@ -205,6 +208,8 @@ h1:focus {
     padding: .45rem .7rem;
     font-size: .82rem;
     color: var(--ta-on-surface);
+    text-align: center;
+    text-align-last: center;
 }
 
 .f8-filters input:focus, .f8-filters select:focus {
@@ -239,7 +244,7 @@ h1:focus {
     background: var(--ta-surface-container-high);
     color: var(--ta-on-surface);
     padding: .55rem .7rem;
-    text-align: left;
+    text-align: center;
     white-space: nowrap;
     border: none;
     z-index: 2;
@@ -267,7 +272,10 @@ h1:focus {
     border: none;
     padding: .25rem .45rem;
     white-space: nowrap;
+    white-space: nowrap;
     vertical-align: middle;
+    text-align: center;
+    text-transform: uppercase;
 }
 
 .f8-table tbody tr:nth-child(odd)  td { background: var(--ta-surface-container-low); }
@@ -366,6 +374,12 @@ th.grp-acciones    { background: rgba(142, 144, 162, .15) !important; color: #c4
     width: 100%;
 }
 
+input.ta-cell {
+    field-sizing: content;
+    min-width: 4rem;
+    width: auto;
+}
+
 .ta-cell:hover {
     background: var(--ta-surface-container-lowest);
 }
@@ -380,6 +394,13 @@ select.ta-cell { cursor: pointer; }
 select.ta-cell option { background: var(--ta-surface-container-high); }
 
 .ta-cell-date { min-width: 8.2rem; }
+
+.ta-cell-readonly {
+    background: var(--ta-surface-container) !important;
+    color: var(--ta-on-surface) !important;
+    font-weight: 600;
+    opacity: 1;
+}
 
 .ta-mono {
     font-family: 'JetBrains Mono', monospace;
@@ -562,15 +583,16 @@ select.ta-cell.ta-chip-ssgl { color: var(--ta-outline); }
 
 .f8-form legend {
     font-family: 'Space Grotesk', sans-serif;
-    font-size: .8rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: .1em;
     text-transform: uppercase;
     color: var(--ta-primary);
     padding: 0;
     float: none;
-    width: auto;
+    width: 100%;
     margin-bottom: .6rem;
+    text-align: center;
 }
 
 .f8-form-grid {
@@ -653,6 +675,7 @@ select.ta-cell.ta-chip-ssgl { color: var(--ta-outline); }
     letter-spacing: .1em;
     text-transform: uppercase;
     color: var(--ta-on-surface-variant);
+    text-align: center;
 }
 
 .ta-dash-card .ta-dash-value {
@@ -660,6 +683,7 @@ select.ta-cell.ta-chip-ssgl { color: var(--ta-outline); }
     font-size: 2.2rem;
     font-weight: 700;
     line-height: 1.2;
+    text-align: center;
 }
 
 .ta-dash-card.ok    .ta-dash-value { color: var(--ta-secondary); }
@@ -722,6 +746,21 @@ select.ta-cell.ta-chip-ssgl { color: var(--ta-outline); }
 
 .ta-pdf-option:hover { background: var(--ta-surface-bright); }
 
+.ta-pdf-option-active {
+    background: var(--ta-primary);
+    color: #fff;
+    box-shadow: 0 0 0 2px var(--ta-primary), 0 2px 8px rgba(0,0,0,.3);
+}
+
+.ta-pdf-option-active strong {
+    color: #fff;
+}
+
+.ta-pdf-option-active span {
+    color: #fff;
+    opacity: .9;
+}
+
 .ta-pdf-option strong {
     display: block;
     font-family: 'Space Grotesk', sans-serif;
@@ -746,6 +785,7 @@ select.ta-cell.ta-chip-ssgl { color: var(--ta-outline); }
 }
 
 .f8-table input.ta-cell:not([type="date"]) { text-align: right; }
+.f8-table input.ta-cell.ta-phone { text-align: center; }
 .f8-table input.ta-cell-date { text-align: center; }
 .f8-table td.ta-center { text-align: center; }
 
@@ -940,6 +980,7 @@ select.ta-cell.ta-no {
     margin-bottom: .3rem;
     font-family: 'JetBrains Mono', monospace;
     font-size: .78rem;
+    text-transform: uppercase;
 }
 
 .ta-domain-row button {
@@ -968,3 +1009,120 @@ select.ta-cell.ta-no {
 }
 
 .ta-domain-add input:focus { outline: none; border-bottom-color: var(--ta-secondary); }
+
+/* ============================================================
+   Fecha nacimiento selector custom (año/mes/día)
+   ============================================================ */
+.fecha-nac-row {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+}
+
+.fecha-nac-select {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    color: var(--ta-on-surface);
+    font-size: .76rem;
+    font-family: 'Inter', sans-serif;
+    padding: .25rem .2rem;
+    width: auto;
+    text-align: center;
+    text-align-last: center;
+    cursor: pointer;
+}
+
+.fecha-nac-select:hover {
+    background: var(--ta-surface-container-lowest);
+}
+
+.fecha-nac-select:focus {
+    outline: none;
+    border-bottom-color: var(--ta-secondary);
+}
+
+.f8-table .fecha-nac-select {
+    min-width: 0;
+    width: auto;
+    font-size: .72rem;
+    padding: .2rem .15rem;
+}
+
+.f8-form-grid .fecha-nac-select {
+    font-size: .82rem;
+    padding: .3rem .4rem;
+    border-bottom: 2px solid var(--ta-outline);
+}
+
+/* ============================================================
+   Toast — alerta de aviso (cambio de domicilio NO)
+   ============================================================ */
+.f8-toast {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    padding: .7rem 1.2rem;
+    border-radius: 4px;
+    font-size: .82rem;
+    font-family: 'JetBrains Mono', monospace;
+    background: rgba(255, 152, 0, .18);
+    color: #ffb95f;
+    border-left: 4px solid #ffb95f;
+    box-shadow: 0 4px 24px rgba(0,0,0,.4);
+    animation: f8-toast-in .3s ease, f8-toast-out .5s ease 3.5s forwards;
+}
+
+@keyframes f8-toast-in {
+    from { opacity: 0; transform: translateY(-.5rem); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes f8-toast-out {
+    from { opacity: 1; }
+    to   { opacity: 0; pointer-events: none; }
+}
+
+/* ============================================================
+   Autocomplete — cities input with filtered dropdown
+   ============================================================ */
+.ta-autocomplete {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.ta-autocomplete input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ta-autocomplete-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    max-height: 180px;
+    overflow-y: auto;
+    background: var(--ta-surface-container);
+    border: 1px solid var(--ta-outline-variant);
+    border-top: none;
+    border-radius: 0 0 2px 2px;
+    font-size: .78rem;
+}
+
+.ta-autocomplete-list div {
+    padding: .3rem .5rem;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ta-autocomplete-list div:hover {
+    background: var(--ta-surface-bright);
+    color: var(--ta-primary);
+}
