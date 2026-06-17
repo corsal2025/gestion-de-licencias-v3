@@ -1,4 +1,4 @@
-﻿@page "/modulos/licencias/crear"
+@page "/modulos/licencias/crear"
 @page "/modulos/licencias/editar/{Id:int}"
 @rendermode InteractiveServer
 @inject ITramiteService<TramiteLicencia> ModuloService
@@ -60,10 +60,6 @@
                 <div class="f8-field">
                     <label>TELÉFONO</label>
                     <input placeholder="+56 9..." @bind="Modelo.Telefono" />
-                </div>
-                <div class="f8-field">
-                    <label>CORREO ELECTRÓNICO</label>
-                    <input class="ta-email" list="ta-email-dl" @bind="Modelo.Email" />
                 </div>
                 <div class="f8-field">
                     <label>LUGAR DE ATENCIÓN</label>
@@ -554,19 +550,32 @@
         }
     }
 
-    private void Desbloquear()
+    private async Task Desbloquear()
     {
         if (Modelo is null) return;
         Modelo.DesbloqueoAdministrativo = true;
         Modelo.DesbloqueadoPor = Sesion.Actual?.NombreUsuario ?? "SISTEMA";
         Modelo.FechaDesbloqueo = DateTime.UtcNow;
         if (Modelo.Estado == "BLOQUEADO - NO ASISTIÓ") Modelo.Estado = "En Proceso";
+        
+        try
+        {
+            await ModuloService.ActualizarAsync(Modelo);
+            Mensaje = "Trámite desbloqueado administrativamente con éxito.";
+            EsError = false;
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error al desbloquear: {ex.Message}";
+            EsError = true;
+        }
     }
 
     private async Task Guardar()
     {
         if (Modelo is null) return;
 
+        Modelo.RUT = BaseTramite.FormatearRut(Modelo.RUT);
         Modelo.Telefono = NormalizarTelefono(Modelo.Telefono);
 
         var (ok, msg) = ModuloService.ValidarTramite(Modelo);

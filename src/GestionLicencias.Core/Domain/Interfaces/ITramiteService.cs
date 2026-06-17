@@ -11,6 +11,7 @@ public interface ITramiteService<T> where T : BaseTramite
     Task<T> CrearAsync(T tramite);
     Task<T> ActualizarAsync(T tramite);
     Task<bool> EliminarAsync(int id);
+    Task<int> EliminarMultiplesAsync(IEnumerable<int> ids);
     Task<T> CambiarEstadoAsync(int id, string estado, string usuarioId, string? ip = null);
     (bool IsValid, string Message) ValidarTramite(T tramite);
     Task<int> ObtenerTotalAsync();

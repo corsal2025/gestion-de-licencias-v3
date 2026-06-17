@@ -122,10 +122,29 @@ public class TramiteLicencia : BaseTramite
     public string? DesbloqueadoPor { get; set; }
     public DateTime? FechaDesbloqueo { get; set; }
 
-    // Bloqueo de proceso deshabilitado temporalmente.
-    public bool IdoneidadBloqueante => false;
-    public bool ProcesoBloqueado => false;
-    public string? MotivoBloqueo => null;
+    // Bloqueo de proceso habilitado con reglas reales.
+    public bool IdoneidadBloqueante => IdoneidadMoral == "REPROBADA" || IdoneidadMoral == "JUZGADO";
+
+    public bool ProcesoBloqueado
+    {
+        get
+        {
+            if (DesbloqueoAdministrativo) return false;
+            return Asiste == "NO" || IdoneidadBloqueante;
+        }
+    }
+
+    public string? MotivoBloqueo
+    {
+        get
+        {
+            if (DesbloqueoAdministrativo) return null;
+            if (Asiste == "NO") return "El postulante no asistió a la citación";
+            if (IdoneidadMoral == "REPROBADA") return "Idoneidad moral reprobada";
+            if (IdoneidadMoral == "JUZGADO") return "En espera de resolución del juzgado";
+            return null;
+        }
+    }
 
     // Las columnas de cambio de domicilio en Carpeta solo se habilitan
     // con este estado exacto.

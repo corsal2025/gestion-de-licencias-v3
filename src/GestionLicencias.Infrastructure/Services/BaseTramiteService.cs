@@ -92,6 +92,24 @@ public class BaseTramiteService<T> : ITramiteService<T> where T : BaseTramite
         return true;
     }
 
+    public virtual async Task<int> EliminarMultiplesAsync(IEnumerable<int> ids)
+    {
+        var tramites = await Context.Set<T>()
+            .Where(t => ids.Contains(t.Id))
+            .ToListAsync();
+
+        foreach (var tramite in tramites)
+        {
+            tramite.Activo = false;
+            tramite.FechaEliminacion = DateTime.UtcNow;
+            tramite.FechaActualizacion = DateTime.UtcNow;
+        }
+
+        await Context.SaveChangesAsync();
+        Logger.LogInformation("Eliminados {Count} tramites en lote", tramites.Count);
+        return tramites.Count;
+    }
+
     public virtual async Task<T> CambiarEstadoAsync(int id, string estado, string usuarioId, string? ip = null)
     {
         var tramite = await ObtenerPorIdAsync(id)

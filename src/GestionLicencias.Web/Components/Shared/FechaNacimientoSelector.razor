@@ -1,7 +1,7 @@
 @* Selector de fecha de nacimiento con restricción de 17 años mínimos *@
 
 <div class="fecha-nac-row">
-    <select class="fecha-nac-select" value="@DiaSeleccionado" @onchange="OnDiaChanged" disabled="@(!MesSeleccionado.HasValue)">
+    <select class="fecha-nac-select" value="@DiaSeleccionado" @onchange="OnDiaChanged">
         <option value="">DÍA</option>
         @foreach (var d in DiasDisponibles)
         {
@@ -9,7 +9,7 @@
         }
     </select>
 
-    <select class="fecha-nac-select" value="@MesSeleccionado" @onchange="OnMesChanged" disabled="@(!AnioSeleccionado.HasValue)">
+    <select class="fecha-nac-select" value="@MesSeleccionado" @onchange="OnMesChanged">
         <option value="">MES</option>
         @for (int m = 1; m <= 12; m++)
         {
@@ -51,6 +51,29 @@
             AnioSeleccionado = Value.Value.Year;
             MesSeleccionado = Value.Value.Month;
             DiaSeleccionado = Value.Value.Day;
+        }
+        ActualizarDias();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Value.HasValue)
+        {
+            if (AnioSeleccionado != Value.Value.Year || 
+                MesSeleccionado != Value.Value.Month || 
+                DiaSeleccionado != Value.Value.Day)
+            {
+                AnioSeleccionado = Value.Value.Year;
+                MesSeleccionado = Value.Value.Month;
+                DiaSeleccionado = Value.Value.Day;
+                ActualizarDias();
+            }
+        }
+        else if (AnioSeleccionado.HasValue || MesSeleccionado.HasValue || DiaSeleccionado.HasValue)
+        {
+            AnioSeleccionado = null;
+            MesSeleccionado = null;
+            DiaSeleccionado = null;
             ActualizarDias();
         }
     }
@@ -58,16 +81,13 @@
     private void OnAnioChanged(ChangeEventArgs e)
     {
         AnioSeleccionado = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
-        MesSeleccionado = null;
-        DiaSeleccionado = null;
-        DiasDisponibles.Clear();
+        ActualizarDias();
         NotificarValor();
     }
 
     private void OnMesChanged(ChangeEventArgs e)
     {
         MesSeleccionado = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
-        DiaSeleccionado = null;
         ActualizarDias();
         NotificarValor();
     }
@@ -80,22 +100,25 @@
 
     private void ActualizarDias()
     {
-        if (!AnioSeleccionado.HasValue || !MesSeleccionado.HasValue)
-        {
-            DiasDisponibles.Clear();
-            return;
-        }
+        int anio = AnioSeleccionado ?? DateTime.Today.Year;
+        int mes = MesSeleccionado ?? 1;
 
-        // Validar que no exceda la fecha máxima (hoy - 17 años)
         var maxFecha = DateTime.Today.AddYears(-EdadMinima);
-        var diasEnMes = DateTime.DaysInMonth(AnioSeleccionado.Value, MesSeleccionado.Value);
+        var diasEnMes = DateTime.DaysInMonth(anio, mes);
 
         DiasDisponibles = Enumerable.Range(1, diasEnMes).ToList();
 
-        // Si el año/mes seleccionado es igual al máximo, limitar el día
-        if (AnioSeleccionado.Value == maxFecha.Year && MesSeleccionado.Value == maxFecha.Month)
+        if (AnioSeleccionado.HasValue && MesSeleccionado.HasValue)
         {
-            DiasDisponibles = DiasDisponibles.Where(d => d <= maxFecha.Day).ToList();
+            if (AnioSeleccionado.Value == maxFecha.Year && MesSeleccionado.Value == maxFecha.Month)
+            {
+                DiasDisponibles = DiasDisponibles.Where(d => d <= maxFecha.Day).ToList();
+            }
+        }
+
+        if (DiaSeleccionado.HasValue && !DiasDisponibles.Contains(DiaSeleccionado.Value))
+        {
+            DiaSeleccionado = null;
         }
     }
 
@@ -103,8 +126,15 @@
     {
         if (AnioSeleccionado.HasValue && MesSeleccionado.HasValue && DiaSeleccionado.HasValue)
         {
-            var fecha = new DateTime(AnioSeleccionado.Value, MesSeleccionado.Value, DiaSeleccionado.Value);
-            Value = fecha;
+            try
+            {
+                var fecha = new DateTime(AnioSeleccionado.Value, MesSeleccionado.Value, DiaSeleccionado.Value);
+                Value = fecha;
+            }
+            catch
+            {
+                Value = null;
+            }
         }
         else
         {

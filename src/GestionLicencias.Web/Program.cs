@@ -25,6 +25,14 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<GestionLicenciasDbContext>();
     db.Database.Migrate();
 
+    // Limpieza de registros fantasma de cabecera de pruebas anteriores
+    var fantasmas = db.TramitesLicencia.Where(t => t.RUT == "RUT" || t.Nombre == "NOMBRE COMPLETO" || t.Nombre == "NOMBRE").ToList();
+    if (fantasmas.Any())
+    {
+        db.TramitesLicencia.RemoveRange(fantasmas);
+        db.SaveChanges();
+    }
+
     // Usuarios iniciales con acceso total. El administrador puede crear el
     // resto de los usuarios (uno por sección) desde /admin/usuarios.
     if (!db.Usuarios.Any())
