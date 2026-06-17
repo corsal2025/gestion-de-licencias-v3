@@ -1092,11 +1092,13 @@ select.ta-cell.ta-no {
     position: relative;
     display: inline-block;
     width: 100%;
+    text-align: center;
 }
 
 .ta-autocomplete input {
     width: 100%;
     box-sizing: border-box;
+    text-align: center;
 }
 
 .ta-autocomplete-list {
@@ -1120,6 +1122,7 @@ select.ta-cell.ta-no {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-align: center;
 }
 
 .ta-autocomplete-list div:hover {
