@@ -919,6 +919,8 @@ Departamento de Licencias de Conducir");
         _ => ""
     };
 
+    private static string F(DateTime? d) => d?.ToString("dd/MM/yyyy") ?? "";
+
     private void OnFiltroTerminoChanged(ChangeEventArgs e)
     {
         var raw = e.Value?.ToString() ?? "";
