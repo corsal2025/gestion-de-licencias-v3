@@ -38,6 +38,7 @@
 
     private List<int> Anios = new();
     private List<int> DiasDisponibles = new();
+    private DateTime? ultimoValorNotificado;
 
     protected override void OnInitialized()
     {
@@ -52,28 +53,27 @@
             MesSeleccionado = Value.Value.Month;
             DiaSeleccionado = Value.Value.Day;
         }
+        ultimoValorNotificado = Value;
         ActualizarDias();
     }
 
     protected override void OnParametersSet()
     {
-        if (Value.HasValue)
+        if (Value != ultimoValorNotificado)
         {
-            if (AnioSeleccionado != Value.Value.Year || 
-                MesSeleccionado != Value.Value.Month || 
-                DiaSeleccionado != Value.Value.Day)
+            ultimoValorNotificado = Value;
+            if (Value.HasValue)
             {
                 AnioSeleccionado = Value.Value.Year;
                 MesSeleccionado = Value.Value.Month;
                 DiaSeleccionado = Value.Value.Day;
-                ActualizarDias();
             }
-        }
-        else if (AnioSeleccionado.HasValue || MesSeleccionado.HasValue || DiaSeleccionado.HasValue)
-        {
-            AnioSeleccionado = null;
-            MesSeleccionado = null;
-            DiaSeleccionado = null;
+            else
+            {
+                AnioSeleccionado = null;
+                MesSeleccionado = null;
+                DiaSeleccionado = null;
+            }
             ActualizarDias();
         }
     }
@@ -124,23 +124,25 @@
 
     private void NotificarValor()
     {
+        DateTime? nuevoValor = null;
         if (AnioSeleccionado.HasValue && MesSeleccionado.HasValue && DiaSeleccionado.HasValue)
         {
             try
             {
-                var fecha = new DateTime(AnioSeleccionado.Value, MesSeleccionado.Value, DiaSeleccionado.Value);
-                Value = fecha;
+                nuevoValor = new DateTime(AnioSeleccionado.Value, MesSeleccionado.Value, DiaSeleccionado.Value);
             }
             catch
             {
-                Value = null;
+                nuevoValor = null;
             }
         }
-        else
+
+        if (Value != nuevoValor)
         {
-            Value = null;
+            Value = nuevoValor;
+            ultimoValorNotificado = nuevoValor;
+            ValueChanged.InvokeAsync(Value);
         }
-        ValueChanged.InvokeAsync(Value);
     }
 
     private static string MesNombre(int mes) => mes switch
