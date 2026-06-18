@@ -4,6 +4,7 @@
 @inject ITramiteService<TramiteLicencia> ModuloService
 @inject NavigationManager Nav
 @inject SesionUsuario Sesion
+@inject IJSRuntime JS
 
 <PageTitle>@(Id == 0 ? "Nuevo registro" : "Editar registro") — MODELO POWERBI</PageTitle>
 
@@ -175,7 +176,7 @@
             <div class="f8-form-grid">
                 <div class="f8-field">
                     <label>IDONEIDAD MORAL</label>
-                    <select @bind="Modelo.IdoneidadMoral">
+                    <select @bind="Modelo.IdoneidadMoral" @bind:after="OnIdoneidadMoralChanged">
                         <option value="">—</option>
                         @foreach (var v in Catalogos.IdoneidadMoral)
                         {
@@ -458,6 +459,17 @@
         if (Modelo is null) return;
         if (Modelo.LugarAtencion == "PLACILLA")
             Modelo.ImpresaPor = "SANDRA";
+    }
+
+    private async Task OnIdoneidadMoralChanged()
+    {
+        if (Modelo is null) return;
+        if (Modelo.IdoneidadMoral == "JUZGADO")
+        {
+            var nombre = Modelo.NombreCompleto;
+            var msg = $"ATENCIÓN: El postulante {nombre} (RUT: {Modelo.RUT}) ha sido derivado a JUZGADO. Su proceso quedará bloqueado.";
+            await JS.InvokeVoidAsync("alert", msg);
+        }
     }
 
     private void OnEstadoCarpetaChanged()

@@ -243,7 +243,7 @@
                                 </select>
                             </td>
                             <td class="sep-idoneidad">
-                                <select class="ta-cell ta-w-md @ClaseAprobada(r.IdoneidadMoral)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.IdoneidadMoral))" @bind="r.IdoneidadMoral" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md @ClaseAprobada(r.IdoneidadMoral)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.IdoneidadMoral))" @bind="r.IdoneidadMoral" @bind:after="() => OnIdoneidadMoralChanged(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.IdoneidadMoral)
                                     {
@@ -863,6 +863,17 @@
         }
         
         await GuardarFila(r);
+    }
+
+    private async Task OnIdoneidadMoralChanged(TramiteLicencia r)
+    {
+        await GuardarFila(r);
+        if (r.IdoneidadMoral == "JUZGADO")
+        {
+            var nombre = r.NombreCompleto ?? $"{r.Nombre} {r.Apellido}";
+            var msg = $"ATENCIÓN: El postulante {nombre} (RUT: {r.RUT}) ha sido derivado a JUZGADO. Su proceso quedará bloqueado.";
+            await JS.InvokeVoidAsync("alert", msg);
+        }
     }
 
     private void EnviarCorreoSolicitudCarpeta(TramiteLicencia r)
