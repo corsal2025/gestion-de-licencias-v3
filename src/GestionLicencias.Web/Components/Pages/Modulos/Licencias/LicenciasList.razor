@@ -659,6 +659,10 @@
                 PageSize = PageSize
             });
             Registros = res.ToList();
+            foreach (var r in Registros)
+            {
+                r.RUT = BaseTramite.FormatearRut(r.RUT);
+            }
             TotalResultados = tot;
             TotalPaginas = Math.Max(1, (int)Math.Ceiling((double)tot / PageSize));
             ActualizarDuplicados();

@@ -37,14 +37,19 @@ public abstract class BaseTramite
     public static string FormatearRut(string rut)
     {
         if (string.IsNullOrWhiteSpace(rut)) return "";
-        var limpio = rut.Replace(".", "").Replace("-", "").Trim().ToUpperInvariant();
+        var limpio = rut.Replace(".", "").Replace(",", "").Replace("-", "").Trim().ToUpperInvariant();
         limpio = System.Text.RegularExpressions.Regex.Replace(limpio, @"[^0-9K]", "");
         if (limpio.Length < 2) return limpio;
         var dv = limpio.Substring(limpio.Length - 1);
         var cuerpoStr = limpio.Substring(0, limpio.Length - 1);
         if (long.TryParse(cuerpoStr, out long cuerpo))
         {
-            return cuerpo.ToString("N0", new System.Globalization.CultureInfo("es-CL")) + "-" + dv;
+            var nfi = new System.Globalization.NumberFormatInfo
+            {
+                NumberGroupSeparator = ".",
+                NumberDecimalSeparator = ","
+            };
+            return cuerpo.ToString("N0", nfi) + "-" + dv;
         }
         return cuerpoStr + "-" + dv;
     }

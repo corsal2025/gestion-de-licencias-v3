@@ -847,6 +847,7 @@ select.ta-cell.ta-no {
     max-width: 250px;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-align: left;
 }
 
 .f8-table th.ta-fix2, .f8-table td.ta-fix2 {

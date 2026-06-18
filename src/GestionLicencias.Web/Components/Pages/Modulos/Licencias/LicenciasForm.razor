@@ -432,6 +432,10 @@
                 Mensaje = $"No se encontró el registro {Id}.";
                 EsError = true;
             }
+            else
+            {
+                Modelo.RUT = BaseTramite.FormatearRut(Modelo.RUT);
+            }
         }
     }
 
