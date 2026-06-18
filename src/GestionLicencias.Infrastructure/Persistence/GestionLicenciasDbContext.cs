@@ -20,6 +20,7 @@ public class GestionLicenciasDbContext : DbContext
             entity.Property(u => u.NombreUsuario).HasMaxLength(100);
             entity.Property(u => u.NombreCompleto).HasMaxLength(200);
             entity.Property(u => u.Rol).HasMaxLength(50);
+            entity.Property(u => u.RowVersion).IsRowVersion().IsConcurrencyToken();
             entity.HasIndex(u => u.NombreUsuario).IsUnique();
         });
 
@@ -31,6 +32,7 @@ public class GestionLicenciasDbContext : DbContext
             entity.Property(t => t.Nombre).HasMaxLength(200);
             entity.Property(t => t.Email).HasMaxLength(200);
             entity.Property(t => t.Telefono).HasMaxLength(50);
+            entity.Property(t => t.RowVersion).IsRowVersion().IsConcurrencyToken();
             entity.HasIndex(t => t.RUT);
             entity.HasDiscriminator(t => t.TipoModulo)
                   .HasValue<TramiteLicencia>("TramiteLicencia");

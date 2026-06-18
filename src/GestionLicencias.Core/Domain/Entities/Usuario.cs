@@ -12,4 +12,7 @@ public class Usuario
     public required string Rol { get; set; }
     public bool Activo { get; set; } = true;
     public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+    public byte[]? RowVersion { get; set; }
+    public int IntentosFallidos { get; set; } = 0;
+    public DateTime? BloqueadoHasta { get; set; }
 }
