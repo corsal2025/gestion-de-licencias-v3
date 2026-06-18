@@ -214,6 +214,7 @@
                                            value="@(r.CiudadCambioDomicilio ?? "")"
                                            disabled="@(r.ProcesoBloqueado || !r.CambioDomicilioActivo || NoEdita(Roles.Carpeta))"
                                            @oninput="(e) => FiltrarCiudadRapida(r, e)"
+                                           @onchange="() => GuardarFila(r)"
                                            @onfocus="() => AbrirCiudadDropdown(r)" />
                                     @if (CiudadDropdownAbierto == r.Id && FiltroCiudadRapida.Length >= 0)
                                     {
@@ -812,10 +813,20 @@
     {
         FiltroCiudadRapida = e.Value?.ToString() ?? "";
         CiudadDropdownAbierto = r.Id;
+        
+        var valor = string.IsNullOrWhiteSpace(FiltroCiudadRapida) ? null : FiltroCiudadRapida.ToUpperInvariant();
+        r.CiudadCambioDomicilio = valor;
+        if (r.CambioDomicilioPedido == "SI")
+        {
+            r.LugarOrigenCambioDomicilio = valor;
+        }
+        else
+        {
+            r.LugarOrigenCambioDomicilio = null;
+        }
+
         if (string.IsNullOrWhiteSpace(FiltroCiudadRapida))
         {
-            r.CiudadCambioDomicilio = null;
-            r.LugarOrigenCambioDomicilio = null;
             await GuardarFila(r);
         }
         await Task.CompletedTask;

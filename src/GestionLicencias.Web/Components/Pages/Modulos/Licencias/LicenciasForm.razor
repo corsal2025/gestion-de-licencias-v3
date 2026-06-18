@@ -512,10 +512,19 @@
     {
         FiltroCiudadForm = e.Value?.ToString() ?? "";
         CiudadFormAbierto = true;
-        if (string.IsNullOrWhiteSpace(FiltroCiudadForm) && Modelo is not null)
+        
+        if (Modelo is not null)
         {
-            Modelo.CiudadCambioDomicilio = null;
-            Modelo.LugarOrigenCambioDomicilio = null;
+            var valor = string.IsNullOrWhiteSpace(FiltroCiudadForm) ? null : FiltroCiudadForm.ToUpperInvariant();
+            Modelo.CiudadCambioDomicilio = valor;
+            if (Modelo.CambioDomicilioPedido == "SI")
+            {
+                Modelo.LugarOrigenCambioDomicilio = valor;
+            }
+            else
+            {
+                Modelo.LugarOrigenCambioDomicilio = null;
+            }
         }
     }
 
