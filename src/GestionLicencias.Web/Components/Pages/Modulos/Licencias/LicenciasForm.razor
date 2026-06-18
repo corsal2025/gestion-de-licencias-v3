@@ -119,7 +119,7 @@
                 </div>
                 <div class="f8-field">
                     <label>CAMBIO DE DOMICILIO PEDIDO</label>
-                    <select @bind="Modelo.CambioDomicilioPedido" @bind:after="OnCambioDomicilioPedidoChanged" disabled="@(!Modelo.CambioDomicilioActivo)">
+                    <select @bind="Modelo.CambioDomicilioPedido" @bind:after="OnCambioDomicilioPedidoChanged">
                         <option value="">—</option>
                         @foreach (var v in Catalogos.SiNo)
                         {
@@ -132,10 +132,9 @@
                     <div class="ta-autocomplete">
                         <input placeholder="Buscar ciudad..."
                                value="@(Modelo.CiudadCambioDomicilio ?? "")"
-                               disabled="@(!Modelo.CambioDomicilioActivo)"
                                @oninput="FiltrarCiudadForm"
                                @onfocus="() => CiudadFormAbierto = true" />
-                        @if (CiudadFormAbierto && Modelo.CambioDomicilioActivo)
+                        @if (CiudadFormAbierto)
                         {
                             var opciones = FiltrarCiudades(FiltroCiudadForm);
                             if (opciones.Length > 0)
@@ -207,7 +206,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.CambioDomicilio))">
+        <fieldset disabled="@(Modelo.ProcesoBloqueado)">
             <legend>Cambio de domicilio</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">

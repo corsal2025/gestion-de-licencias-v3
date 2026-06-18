@@ -209,10 +209,10 @@
                                 </select>
                             </td>
                             <td class="ta-cell-center">
-                                <div class="ta-autocomplete" disabled="@(r.ProcesoBloqueado || !r.CambioDomicilioActivo || NoEdita(Roles.Carpeta))">
+                                <div class="ta-autocomplete" disabled="@(r.ProcesoBloqueado)">
                                     <input class="ta-cell ta-w-md" placeholder="Buscar ciudad..."
                                            value="@(r.CiudadCambioDomicilio ?? "")"
-                                           disabled="@(r.ProcesoBloqueado || !r.CambioDomicilioActivo || NoEdita(Roles.Carpeta))"
+                                           disabled="@(r.ProcesoBloqueado)"
                                            @oninput="(e) => FiltrarCiudadRapida(r, e)"
                                            @onchange="() => GuardarFila(r)"
                                            @onfocus="() => AbrirCiudadDropdown(r)" />
@@ -272,7 +272,7 @@
                             <td class="sep-domicilio ta-cell-center">
                                 @if (r.CambioDomicilioPedido == "SI")
                                 {
-                                    <input class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.CambioDomicilio))" @bind="r.LugarOrigenCambioDomicilio" @bind:after="() => GuardarFila(r)" />
+                                    <input class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado)" @bind="r.LugarOrigenCambioDomicilio" @bind:after="() => GuardarFila(r)" />
                                 }
                                 else
                                 {
@@ -280,7 +280,7 @@
                                 }
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.PeticionCambioDomicilio)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.CambioDomicilio))" @bind="r.PeticionCambioDomicilio" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.PeticionCambioDomicilio)" disabled="@(r.ProcesoBloqueado)" @bind="r.PeticionCambioDomicilio" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -289,7 +289,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.CambioDomicilio))" @bind="r.CambioDomicilioPedidoPor" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado)" @bind="r.CambioDomicilioPedidoPor" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.CambioDomicilioPedidoPor)
                                     {
@@ -298,7 +298,7 @@
                                 </select>
                             </td>
                             <td class="ta-cell-center">
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.CambioDomicilioPedido)" disabled="@(r.ProcesoBloqueado || !r.CambioDomicilioActivo || NoEdita(Roles.CambioDomicilio))" @bind="r.CambioDomicilioPedido" @bind:after="() => OnCambioDomicilioPedidoChanged(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.CambioDomicilioPedido)" disabled="@(r.ProcesoBloqueado)" @bind="r.CambioDomicilioPedido" @bind:after="() => OnCambioDomicilioPedidoChanged(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
