@@ -472,12 +472,22 @@
         {
             Modelo.CambioDomicilioPedido = null;
             Modelo.CiudadCambioDomicilio = null;
+            Modelo.LugarOrigenCambioDomicilio = null;
         }
     }
 
     private async Task OnCambioDomicilioPedidoChanged()
     {
         if (Modelo is null) return;
+        if (Modelo.CambioDomicilioPedido == "SI")
+        {
+            Modelo.LugarOrigenCambioDomicilio = Modelo.CiudadCambioDomicilio;
+        }
+        else
+        {
+            Modelo.LugarOrigenCambioDomicilio = null;
+        }
+
         if (Modelo.CambioDomicilioPedido == "NO")
         {
             MostrarToastDomicilio = true;
@@ -513,7 +523,14 @@
     {
         if (Modelo is null) return;
         Modelo.CiudadCambioDomicilio = ciudad;
-        Modelo.LugarOrigenCambioDomicilio = ciudad;
+        if (Modelo.CambioDomicilioPedido == "SI")
+        {
+            Modelo.LugarOrigenCambioDomicilio = ciudad;
+        }
+        else
+        {
+            Modelo.LugarOrigenCambioDomicilio = null;
+        }
         CiudadFormAbierto = false;
         FiltroCiudadForm = "";
     }
@@ -535,6 +552,7 @@
         {
             Modelo.CambioDomicilioPedido = null;
             Modelo.CiudadCambioDomicilio = null;
+            Modelo.LugarOrigenCambioDomicilio = null;
         }
     }
 

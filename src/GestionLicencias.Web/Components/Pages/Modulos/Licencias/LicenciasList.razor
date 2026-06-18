@@ -765,12 +765,22 @@
         {
             r.CambioDomicilioPedido = null;
             r.CiudadCambioDomicilio = null;
+            r.LugarOrigenCambioDomicilio = null;
         }
         await GuardarFila(r);
     }
 
     private async Task OnCambioDomicilioPedidoChanged(TramiteLicencia r)
     {
+        if (r.CambioDomicilioPedido == "SI")
+        {
+            r.LugarOrigenCambioDomicilio = r.CiudadCambioDomicilio;
+        }
+        else
+        {
+            r.LugarOrigenCambioDomicilio = null;
+        }
+
         if (r.CambioDomicilioPedido == "NO")
         {
             MostrarToastDomicilio = true;
@@ -806,6 +816,7 @@
         {
             r.CiudadCambioDomicilio = null;
             r.LugarOrigenCambioDomicilio = null;
+            await GuardarFila(r);
         }
         await Task.CompletedTask;
     }
@@ -813,7 +824,14 @@
     private async Task SeleccionarCiudadRapida(TramiteLicencia r, string ciudad)
     {
         r.CiudadCambioDomicilio = ciudad;
-        r.LugarOrigenCambioDomicilio = ciudad;
+        if (r.CambioDomicilioPedido == "SI")
+        {
+            r.LugarOrigenCambioDomicilio = ciudad;
+        }
+        else
+        {
+            r.LugarOrigenCambioDomicilio = null;
+        }
         CiudadDropdownAbierto = null;
         FiltroCiudadRapida = "";
         await GuardarFila(r);
@@ -880,6 +898,7 @@ Departamento de Licencias de Conducir");
         {
             r.CambioDomicilioPedido = null;
             r.CiudadCambioDomicilio = null;
+            r.LugarOrigenCambioDomicilio = null;
         }
         await GuardarFila(r);
     }
