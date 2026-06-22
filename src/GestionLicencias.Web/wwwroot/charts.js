@@ -128,6 +128,20 @@ window.taCharts = {
             }
         }, edades.length > 0);
 
+        // Pie — attendance at appointment
+        const as = dict(d.porAsistencia);
+        const asColors = as.labels.map(l =>
+            l === 'SI'  ? '#4edea3' :
+            l === 'NO'  ? '#ff7a6e' : '#8e90a2');
+        make('chAsistencia', {
+            type: 'pie',
+            data: {
+                labels: as.labels,
+                datasets: [{ data: as.values, backgroundColor: asColors, borderColor: '#0b1326', borderWidth: 2 }]
+            },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        }, !soloSinDatos(d.porAsistencia));
+
         // Scatter — age vs processing days
         const disp = (d.dispersion || []).map(p => ({ x: p.edad, y: p.diasTramitacion }));
         make('chDispersion', {

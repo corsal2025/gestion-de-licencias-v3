@@ -1,4 +1,4 @@
-@page "/modulos/licencias"
+﻿@page "/modulos/licencias"
 @rendermode InteractiveServer
 @using System.Globalization
 @using ClosedXML.Excel
@@ -91,7 +91,7 @@
                 <thead>
                     <tr class="ta-grupos">
                         <th colspan="12" class="grp-contrib">DATOS PERSONALES CONTRIBUYENTE Y CITACIÓN</th>
-                        <th colspan="6" class="grp-carpeta sep-carpeta">CARPETA</th>
+                        <th colspan="7" class="grp-carpeta sep-carpeta">CARPETA</th>
                         <th colspan="3" class="grp-idoneidad sep-idoneidad">IDONEIDAD MORAL</th>
                         <th colspan="5" class="grp-domicilio sep-domicilio">CAMBIO DE DOMICILIO</th>
                         <th colspan="3" class="grp-f8 sep-f8">F8</th>
@@ -114,6 +114,7 @@
                         <th>ASISTE</th>
                         <th class="sep-carpeta">FECHA ÚLTIMA CARPETA</th>
                         <th>ESTADO DE LA CARPETA</th>
+                        <th>CORREO DIRECTOR</th>
                         <th>CIUDADES</th>
                         <th>FECHA DIGITALIZACIÓN CARPETA</th>
                         <th>FECHA SUBIDA A CONASET</th>
@@ -166,7 +167,7 @@
                                     }
                                 </select>
                             </td>
-                            <td><FechaNacimientoSelector @bind-value="r.FechaNacimiento" /></td>
+                            <td><FechaNacimientoSelector @bind-value="r.FechaNacimiento" @bind-value:after="() => GuardarFila(r)" /></td>
                             <td class="ta-center"><span class="ta-readonly">@(r.Edad?.ToString() ?? "—")</span></td>
                             <td>
                                 <select class="ta-cell ta-w-sm" @bind="r.TipoLicencia" @bind:after="() => GuardarFila(r)">
@@ -209,10 +210,15 @@
                                 </select>
                             </td>
                             <td class="ta-cell-center">
-                                <div class="ta-autocomplete" disabled="@(r.ProcesoBloqueado)">
+                                @if (r.EstadoCarpeta == "CREAR OFICIO")
+                                {
+                                    <button type="button" class="f8-btn f8-btn-sm" title="Enviar correo al Director — certificado del contribuyente (próximamente)" disabled>✉</button>
+                                }
+                            </td>
+                            <td class="ta-cell-center">
+                                <div class="ta-autocomplete">
                                     <input class="ta-cell ta-w-md" placeholder="Buscar ciudad..."
                                            value="@(r.CiudadCambioDomicilio ?? "")"
-                                           disabled="@(r.ProcesoBloqueado)"
                                            @oninput="(e) => FiltrarCiudadRapida(r, e)"
                                            @onchange="() => GuardarFila(r)"
                                            @onfocus="() => AbrirCiudadDropdown(r)" />
@@ -243,13 +249,37 @@
                                 </select>
                             </td>
                             <td class="sep-idoneidad">
-                                <select class="ta-cell ta-w-md @ClaseAprobada(r.IdoneidadMoral)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.IdoneidadMoral))" @bind="r.IdoneidadMoral" @bind:after="() => OnIdoneidadMoralChanged(r)">
-                                    <option value="">—</option>
-                                    @foreach (var v in Catalogos.IdoneidadMoral)
+                                <div style="display:flex;gap:.35rem;align-items:center;">
+                                    <select class="ta-cell ta-w-md @ClaseAprobada(r.IdoneidadMoral)" disabled="@IdoneidadDeshabilitadaFila(r)" @bind="r.IdoneidadMoral" @bind:after="() => OnIdoneidadMoralChanged(r)">
+                                        <option value="">—</option>
+                                        @foreach (var v in Catalogos.IdoneidadMoral)
+                                        {
+                                            <option value="@v">@v</option>
+                                        }
+                                    </select>
+                                    @if (r.IdoneidadMoral == "JUZGADO")
                                     {
-                                        <option value="@v">@v</option>
+                                        <span class="ta-alerta-juzgado">⚖ JUZGADO</span>
                                     }
-                                </select>
+                                    @if (PuedeGestionarJuzgado && r.IdoneidadMoral != "JUZGADO")
+                                    {
+                                        @if (r.IdoneidadMoral == "REPROBADA" && !r.DesbloqueoAdministrativo)
+                                        {
+                                            <button type="button" class="f8-btn f8-btn-sm" title="Desbloquear proceso REPROBADA" @onclick="() => DesbloquearJuzgado(r)">🔒</button>
+                                        }
+                                        else if (!r.IdoneidadBloqueante)
+                                        {
+                                            <button type="button" class="f8-btn f8-btn-sm" title="Bloquear proceso por Juzgado" @onclick="() => BloquearJuzgado(r)">🔓</button>
+                                        }
+                                    }
+                                    @if (r.IdoneidadMoral == "JUZGADO" || r.IdoneidadMoral == "REPROBADA")
+                                    {
+                                        <button type="button"
+                                                class="f8-btn f8-btn-sm"
+                                                title="Enviar correo al contribuyente"
+                                                @onclick="() => EnviarCorreoBloqueoContribuyente(r)">✉</button>
+                                    }
+                                </div>
                             </td>
                             <td>
                                 <select class="ta-cell ta-w-sm @ClaseSiNo(r.Contactado)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.IdoneidadMoral))" @bind="r.Contactado" @bind:after="() => GuardarFila(r)">
@@ -270,9 +300,9 @@
                                 </select>
                             </td>
                             <td class="sep-domicilio ta-cell-center">
-                                @if (r.CambioDomicilioPedido == "SI")
+                                @if (r.CambioDomicilioActivo)
                                 {
-                                    <input class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado)" @bind="r.LugarOrigenCambioDomicilio" @bind:after="() => GuardarFila(r)" />
+                                    <input class="ta-cell ta-w-md" @bind="r.LugarOrigenCambioDomicilio" @bind:after="() => GuardarFila(r)" />
                                 }
                                 else
                                 {
@@ -280,7 +310,7 @@
                                 }
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.PeticionCambioDomicilio)" disabled="@(r.ProcesoBloqueado)" @bind="r.PeticionCambioDomicilio" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.PeticionCambioDomicilio)" @bind="r.PeticionCambioDomicilio" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -289,7 +319,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado)" @bind="r.CambioDomicilioPedidoPor" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md" @bind="r.CambioDomicilioPedidoPor" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.CambioDomicilioPedidoPor)
                                     {
@@ -298,7 +328,7 @@
                                 </select>
                             </td>
                             <td class="ta-cell-center">
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.CambioDomicilioPedido)" disabled="@(r.ProcesoBloqueado)" @bind="r.CambioDomicilioPedido" @bind:after="() => OnCambioDomicilioPedidoChanged(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.CambioDomicilioPedido)" @bind="r.CambioDomicilioPedido" @bind:after="() => OnCambioDomicilioPedidoChanged(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -313,10 +343,10 @@
                                             @onclick="() => EnviarCorreoSolicitudCarpeta(r)">📧</button>
                                 }
                             </td>
-                            <td class="sep-f8"><input class="ta-cell ta-mono ta-w-sm" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.F8))" @bind="r.FolioF8" @bind:after="() => GuardarFila(r)" /></td>
-                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.F8))" @bind="r.FechaPenultimaCarpeta" @bind:after="() => GuardarFila(r)" /></td>
+                            <td class="sep-f8"><input class="ta-cell ta-mono ta-w-sm" disabled="@r.ProcesoBloqueado" @bind="r.FolioF8" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaPenultimaCarpeta" @bind:after="() => GuardarFila(r)" /></td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.F8))" value="@r.EstadoF8" @onchange="e => OnEstadoF8Changed(r, e)">
+                                <select class="ta-cell ta-w-md" disabled="@r.ProcesoBloqueado" value="@r.EstadoF8" @onchange="e => OnEstadoF8Changed(r, e)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.EstadosF8)
                                     {
@@ -325,7 +355,7 @@
                                 </select>
                             </td>
                             <td class="sep-otorg">
-                                <select class="ta-cell ta-w-md @ChipOtorgamiento(r.Otorgamiento)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))" @bind="r.Otorgamiento" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md @ChipOtorgamiento(r.Otorgamiento)" disabled="@r.ProcesoBloqueado" @bind="r.Otorgamiento" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.Otorgamientos)
                                     {
@@ -333,10 +363,10 @@
                                     }
                                 </select>
                             </td>
-                            <td><input class="ta-cell ta-mono ta-w-sm" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))" @bind="r.FolioLicencia" @bind:after="() => GuardarFila(r)" /></td>
-                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))" @bind="r.FechaImpresion" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input class="ta-cell ta-mono ta-w-sm" disabled="@r.ProcesoBloqueado" @bind="r.FolioLicencia" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaImpresion" @bind:after="() => GuardarFila(r)" /></td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))" @bind="r.ImpresaPor" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md" disabled="@r.ProcesoBloqueado" @bind="r.ImpresaPor" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.ImpresaPor)
                                     {
@@ -345,7 +375,7 @@
                                 </select>
                             </td>
                             <td class="sep-pam">
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.BajadaAPam)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.BajadaAPam" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.BajadaAPam)" disabled="@r.ProcesoBloqueado" @bind="r.BajadaAPam" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -353,10 +383,10 @@
                                     }
                                 </select>
                             </td>
-                            <td><input class="ta-cell ta-w-sm" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.BajadaPor" @bind:after="() => GuardarFila(r)" /></td>
-                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.FechaRecepcionPam" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input class="ta-cell ta-w-sm" disabled="@r.ProcesoBloqueado" @bind="r.BajadaPor" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaRecepcionPam" @bind:after="() => GuardarFila(r)" /></td>
                             <td>
-                                <select class="ta-cell ta-w-md" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.RecibidaEnPamPor" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-md" disabled="@r.ProcesoBloqueado" @bind="r.RecibidaEnPamPor" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.RecibidaEnPamPor)
                                     {
@@ -365,7 +395,7 @@
                                 </select>
                             </td>
                             <td>
-                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.ContactadoParaEntrega)" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.ContactadoParaEntrega" @bind:after="() => GuardarFila(r)">
+                                <select class="ta-cell ta-w-sm @ClaseSiNo(r.ContactadoParaEntrega)" disabled="@r.ProcesoBloqueado" @bind="r.ContactadoParaEntrega" @bind:after="() => GuardarFila(r)">
                                     <option value="">—</option>
                                     @foreach (var v in Catalogos.SiNo)
                                     {
@@ -373,7 +403,7 @@
                                     }
                                 </select>
                             </td>
-                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@(r.ProcesoBloqueado || NoEdita(Roles.PamEntrega))" @bind="r.FechaEntrega" @bind:after="() => GuardarFila(r)" /></td>
+                            <td><input type="date" class="ta-cell ta-cell-date" disabled="@r.ProcesoBloqueado" @bind="r.FechaEntrega" @bind:after="() => GuardarFila(r)" /></td>
                             <td class="sep-acciones">
                                 @if (r.ProcesoBloqueado && Sesion.EsPrivilegiado)
                                 {
@@ -626,9 +656,14 @@
     private string FiltroCiudadRapida = "";
     private HashSet<int> Seleccionados = new();
     private bool TodosSeleccionados => Registros.Count > 0 && Registros.All(r => Seleccionados.Contains(r.Id));
+    // Serializa los saves para evitar operaciones concurrentes sobre el mismo DbContext.
+    private readonly SemaphoreSlim _guardandoSem = new(1, 1);
 
     private string UsuarioActual => Sesion.Actual?.NombreUsuario ?? "SISTEMA";
+    private bool PuedeGestionarJuzgado => Sesion.Actual?.Rol is Roles.Administrador or Roles.Jefatura;
     private bool NoEdita(string seccion) => !Sesion.PuedeEditar(seccion);
+    private bool IdoneidadDeshabilitadaFila(TramiteLicencia r) =>
+        NoEdita(Roles.IdoneidadMoral) || (r.ProcesoBloqueado && !PuedeGestionarJuzgado);
 
     private static readonly string[] DominiosBase =
         ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com", "icloud.com", "munivalpo.cl"];
@@ -663,6 +698,8 @@
             foreach (var r in Registros)
             {
                 r.RUT = BaseTramite.FormatearRut(r.RUT);
+                if (r.CambioDomicilioActivo && !string.IsNullOrEmpty(r.CiudadCambioDomicilio) && string.IsNullOrEmpty(r.LugarOrigenCambioDomicilio))
+                    r.LugarOrigenCambioDomicilio = r.CiudadCambioDomicilio;
             }
             TotalResultados = tot;
             TotalPaginas = Math.Max(1, (int)Math.Ceiling((double)tot / PageSize));
@@ -752,6 +789,8 @@
     {
         if (r.LugarAtencion == "PLACILLA")
             r.ImpresaPor = "SANDRA";
+        else
+            r.ImpresaPor = null;
         await GuardarFila(r);
     }
 
@@ -768,6 +807,10 @@
             r.CiudadCambioDomicilio = null;
             r.LugarOrigenCambioDomicilio = null;
         }
+        else
+        {
+            r.LugarOrigenCambioDomicilio = r.CiudadCambioDomicilio;
+        }
         await GuardarFila(r);
     }
 
@@ -782,6 +825,8 @@
             r.LugarOrigenCambioDomicilio = null;
         }
 
+        await GuardarFila(r);
+
         if (r.CambioDomicilioPedido == "NO")
         {
             MostrarToastDomicilio = true;
@@ -790,7 +835,6 @@
             MostrarToastDomicilio = false;
             StateHasChanged();
         }
-        await GuardarFila(r);
     }
 
     private static string[] FiltrarCiudades(string filtro)
@@ -816,7 +860,7 @@
         
         var valor = string.IsNullOrWhiteSpace(FiltroCiudadRapida) ? null : FiltroCiudadRapida.ToUpperInvariant();
         r.CiudadCambioDomicilio = valor;
-        if (r.CambioDomicilioPedido == "SI")
+        if (r.CambioDomicilioActivo)
         {
             r.LugarOrigenCambioDomicilio = valor;
         }
@@ -835,7 +879,7 @@
     private async Task SeleccionarCiudadRapida(TramiteLicencia r, string ciudad)
     {
         r.CiudadCambioDomicilio = ciudad;
-        if (r.CambioDomicilioPedido == "SI")
+        if (r.CambioDomicilioActivo)
         {
             r.LugarOrigenCambioDomicilio = ciudad;
         }
@@ -851,22 +895,29 @@
     private async Task OnEstadoF8Changed(TramiteLicencia r, ChangeEventArgs e)
     {
         r.EstadoF8 = e.Value?.ToString() ?? "";
-        
-        if (r.EstadoF8 == "SUBIDA A CONASET")
+
+        r.EstadoCarpeta = r.EstadoF8 switch
         {
-            r.EstadoCarpeta = "SUBIDA CON F8";
-            r.FechaSubidaConaset = DateTime.Today;
-        }
-        else
-        {
-            r.FechaSubidaConaset = null;
-        }
-        
+            "SUBIDA A CONASET"   => "SUBIDA CON F8",
+            "CREAR OFICIO"       => "CREAR OFICIO",
+            "CAMBIO DE DOMICILIO"=> "CAMBIO DE DOMICILIO",
+            "PRIMERA LICENCIA"   => "1° LICENCIA",
+            _                    => r.EstadoCarpeta
+        };
+
+        r.FechaSubidaConaset = r.EstadoF8 == "SUBIDA A CONASET" ? DateTime.Today : null;
+
         await GuardarFila(r);
     }
 
     private async Task OnIdoneidadMoralChanged(TramiteLicencia r)
     {
+        if (r.IdoneidadMoral == "REPROBADA" || r.IdoneidadMoral == "JUZGADO")
+        {
+            r.DesbloqueoAdministrativo = false;
+            r.DesbloqueadoPor = null;
+            r.FechaDesbloqueo = null;
+        }
         await GuardarFila(r);
         if (r.IdoneidadMoral == "JUZGADO")
         {
@@ -874,6 +925,39 @@
             var msg = $"ATENCIÓN: El postulante {nombre} (RUT: {r.RUT}) ha sido derivado a JUZGADO. Su proceso quedará bloqueado.";
             await JS.InvokeVoidAsync("alert", msg);
         }
+    }
+
+    private static bool EsBloqueoPorJuzgado(TramiteLicencia r) =>
+        r.IdoneidadMoral == "JUZGADO" && !r.DesbloqueoAdministrativo;
+
+    private static bool EstaBloqueadoPorRechazoOJuzgado(TramiteLicencia r) =>
+        !r.DesbloqueoAdministrativo && (r.IdoneidadMoral == "REPROBADA" || r.IdoneidadMoral == "JUZGADO");
+
+    private async Task BloquearJuzgado(TramiteLicencia r)
+    {
+        if (!PuedeGestionarJuzgado) return;
+
+        r.IdoneidadMoral = "JUZGADO";
+        r.DesbloqueoAdministrativo = false;
+        r.DesbloqueadoPor = null;
+        r.FechaDesbloqueo = null;
+
+        await GuardarFila(r);
+        var nombre = string.IsNullOrWhiteSpace(r.NombreCompleto) ? r.RUT : r.NombreCompleto;
+        await JS.InvokeVoidAsync("alert", $"ATENCIÓN: El postulante {nombre} (RUT: {r.RUT}) ha sido derivado a JUZGADO. Su proceso quedó bloqueado.");
+    }
+
+    private async Task DesbloquearJuzgado(TramiteLicencia r)
+    {
+        if (!PuedeGestionarJuzgado) return;
+
+        r.DesbloqueoAdministrativo = true;
+        r.DesbloqueadoPor = UsuarioActual;
+        r.FechaDesbloqueo = DateTime.UtcNow;
+
+        await GuardarFila(r);
+        Mensaje = $"Bloqueo por Juzgado levantado: {(string.IsNullOrWhiteSpace(r.NombreCompleto) ? r.RUT : r.NombreCompleto)}";
+        EsError = false;
     }
 
     private void EnviarCorreoSolicitudCarpeta(TramiteLicencia r)
@@ -904,17 +988,49 @@ Departamento de Licencias de Conducir");
         JS.InvokeVoidAsync("eval", $"window.open('{mailto}', '_blank')");
     }
 
+    private async Task EnviarCorreoBloqueoContribuyente(TramiteLicencia r)
+    {
+        if (!EstaBloqueadoPorRechazoOJuzgado(r))
+            return;
+
+        if (string.IsNullOrWhiteSpace(r.Email))
+        {
+            await JS.InvokeVoidAsync("alert", "El contribuyente no tiene correo registrado.");
+            return;
+        }
+
+        var nombre = string.IsNullOrWhiteSpace(r.NombreCompleto) ? $"{r.Nombre} {r.Apellido}".Trim() : r.NombreCompleto;
+        var rut = r.RUT ?? "";
+        var motivo = r.IdoneidadMoral == "JUZGADO"
+            ? "derivación a Juzgado"
+            : "rechazo de idoneidad moral";
+
+        var asunto = Uri.EscapeDataString($"Estado de su trámite de licencia — {rut}");
+        var cuerpo = Uri.EscapeDataString(
+$@"Estimado(a) {nombre},
+
+Le informamos que su trámite de licencia de conducir se encuentra temporalmente bloqueado por {motivo}.
+
+RUT: {rut}
+Estado actual: {r.IdoneidadMoral}
+
+Para más información, por favor comuníquese con la Municipalidad de Valparaíso, Departamento de Licencias de Conducir.
+
+Saludos cordiales,
+Municipalidad de Valparaíso
+Departamento de Licencias de Conducir");
+
+        var destinatario = Uri.EscapeDataString(r.Email.Trim());
+        var mailto = $"mailto:{destinatario}?subject={asunto}&body={cuerpo}";
+        await JS.InvokeVoidAsync("eval", $"window.open('{mailto}', '_blank')");
+    }
+
     private async Task ActualizarEstadoCarpeta(TramiteLicencia r)
     {
         r.EstadoCarpeta = r.FechaUltimaCarpeta.HasValue
             && r.FechaUltimaCarpeta.Value >= new DateTime(2023, 7, 1)
                 ? "SE ENCUENTRA EN OF.43"
                 : "SE ENCUENTRA EN ARCHIVOS";
-
-        if (r.EstadoCarpeta == "SUBIDA A CONASET")
-            r.FechaSubidaConaset = DateTime.Today;
-        else
-            r.FechaSubidaConaset = null;
 
         if (!r.CambioDomicilioActivo)
         {
@@ -1085,7 +1201,8 @@ Departamento de Licencias de Conducir");
     {
         if (string.IsNullOrEmpty(input)) return input;
         var digits = new string(input.Where(c => char.IsDigit(c) || c == 'k' || c == 'K').ToArray());
-        if (digits.Length < 2) return input;
+        // Solo aplicar formato RUT si hay al menos 7 dígitos (cuerpo mínimo de un RUT chileno)
+        if (digits.Length < 7) return input;
         var body = digits[..^1];
         var dv = digits[^1].ToString().ToUpper();
         var formatted = string.Empty;

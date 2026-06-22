@@ -93,6 +93,10 @@
                 {
                     <button class="f8-btn" style="margin-left:1rem;" @onclick="Desbloquear">Desbloquear</button>
                 }
+                @if (BloqueadoPorRechazoOJuzgado(Modelo))
+                {
+                    <button class="f8-btn" style="margin-left:.5rem;" @onclick="EnviarCorreoBloqueoContribuyente">Enviar correo</button>
+                }
                 else
                 {
                     <span>Debe realizar el trámite nuevamente desde cero o solicitar el desbloqueo a una jefatura.</span>
@@ -100,7 +104,7 @@
             </div>
         }
 
-        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.Carpeta))">
+        <fieldset>
             <legend>Carpeta</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -170,18 +174,31 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.IdoneidadMoral))">
+        <fieldset disabled="@IdoneidadDeshabilitadaFormulario">
             <legend>Idoneidad moral</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
                     <label>IDONEIDAD MORAL</label>
-                    <select @bind="Modelo.IdoneidadMoral" @bind:after="OnIdoneidadMoralChanged">
-                        <option value="">—</option>
-                        @foreach (var v in Catalogos.IdoneidadMoral)
+                    <div style="display:flex;gap:.5rem;align-items:center;">
+                        <select @bind="Modelo.IdoneidadMoral" @bind:after="OnIdoneidadMoralChanged" style="flex:1;">
+                            <option value="">—</option>
+                            @foreach (var v in Catalogos.IdoneidadMoral)
+                            {
+                                <option value="@v">@v</option>
+                            }
+                        </select>
+                        @if (PuedeGestionarJuzgado)
                         {
-                            <option value="@v">@v</option>
+                            @if (EsBloqueoPorJuzgado(Modelo))
+                            {
+                                <button type="button" class="f8-btn" title="Desbloquear proceso por Juzgado" @onclick="DesbloquearJuzgado">Desbloquear Juzgado</button>
+                            }
+                            else
+                            {
+                                <button type="button" class="f8-btn" title="Bloquear proceso por Juzgado" @onclick="BloquearJuzgado">Bloquear Juzgado</button>
+                            }
                         }
-                    </select>
+                    </div>
                 </div>
                 <div class="f8-field">
                     <label>CONTACTADO</label>
@@ -206,7 +223,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@(Modelo.ProcesoBloqueado)">
+        <fieldset>
             <legend>Cambio de domicilio</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -236,7 +253,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.F8))">
+        <fieldset disabled="@Modelo.ProcesoBloqueado">
             <legend>F8</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -260,7 +277,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.Otorgamiento))">
+        <fieldset disabled="@Modelo.ProcesoBloqueado">
             <legend>Otorgamiento e impresión</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -294,7 +311,7 @@
             </div>
         </fieldset>
 
-        <fieldset disabled="@(Modelo.ProcesoBloqueado || NoEdita(Roles.PamEntrega))">
+        <fieldset disabled="@Modelo.ProcesoBloqueado">
             <legend>PAM y entrega</legend>
             <div class="f8-form-grid">
                 <div class="f8-field">
@@ -404,6 +421,9 @@
     private bool MostrarToastDomicilio = false;
     private bool CiudadFormAbierto = false;
     private string FiltroCiudadForm = "";
+    private bool PuedeGestionarJuzgado => Sesion.Actual?.Rol is Roles.Administrador or Roles.Jefatura;
+    private bool IdoneidadDeshabilitadaFormulario =>
+        Modelo is null || NoEdita(Roles.IdoneidadMoral) || (Modelo.ProcesoBloqueado && !PuedeGestionarJuzgado);
 
     /// <summary>Fecha máxima para nacimiento: 17 años atrás desde hoy.</summary>
     private string MaxFechaNacimiento => DateTime.Today.AddYears(-17).ToString("yyyy-MM-dd");
@@ -458,6 +478,8 @@
         if (Modelo is null) return;
         if (Modelo.LugarAtencion == "PLACILLA")
             Modelo.ImpresaPor = "SANDRA";
+        else
+            Modelo.ImpresaPor = null;
     }
 
     private async Task OnIdoneidadMoralChanged()
@@ -468,6 +490,96 @@
             var nombre = Modelo.NombreCompleto;
             var msg = $"ATENCIÓN: El postulante {nombre} (RUT: {Modelo.RUT}) ha sido derivado a JUZGADO. Su proceso quedará bloqueado.";
             await JS.InvokeVoidAsync("alert", msg);
+        }
+    }
+
+    private static bool BloqueadoPorRechazoOJuzgado(TramiteLicencia? tramite) =>
+        tramite is not null && !tramite.DesbloqueoAdministrativo &&
+        (tramite.IdoneidadMoral == "REPROBADA" || tramite.IdoneidadMoral == "JUZGADO");
+
+    private async Task EnviarCorreoBloqueoContribuyente()
+    {
+        if (Modelo is null || !BloqueadoPorRechazoOJuzgado(Modelo))
+            return;
+
+        if (string.IsNullOrWhiteSpace(Modelo.Email))
+        {
+            await JS.InvokeVoidAsync("alert", "El contribuyente no tiene correo registrado.");
+            return;
+        }
+
+        var nombre = string.IsNullOrWhiteSpace(Modelo.NombreCompleto)
+            ? $"{Modelo.Nombre} {Modelo.Apellido}".Trim()
+            : Modelo.NombreCompleto;
+        var rut = Modelo.RUT ?? "";
+        var motivo = Modelo.IdoneidadMoral == "JUZGADO"
+            ? "derivación a Juzgado"
+            : "rechazo de idoneidad moral";
+
+        var asunto = Uri.EscapeDataString($"Estado de su trámite de licencia — {rut}");
+        var cuerpo = Uri.EscapeDataString(
+$@"Estimado(a) {nombre},
+
+Le informamos que su trámite de licencia de conducir se encuentra temporalmente bloqueado por {motivo}.
+
+RUT: {rut}
+Estado actual: {Modelo.IdoneidadMoral}
+
+Para más información, por favor comuníquese con la Municipalidad de Valparaíso, Departamento de Licencias de Conducir.
+
+Saludos cordiales,
+Municipalidad de Valparaíso
+Departamento de Licencias de Conducir");
+
+        var destinatario = Uri.EscapeDataString(Modelo.Email.Trim());
+        var mailto = $"mailto:{destinatario}?subject={asunto}&body={cuerpo}";
+        await JS.InvokeVoidAsync("eval", $"window.open('{mailto}', '_blank')");
+    }
+
+    private static bool EsBloqueoPorJuzgado(TramiteLicencia? tramite) =>
+        tramite is not null && tramite.IdoneidadMoral == "JUZGADO" && !tramite.DesbloqueoAdministrativo;
+
+    private async Task BloquearJuzgado()
+    {
+        if (Modelo is null || !PuedeGestionarJuzgado) return;
+
+        Modelo.IdoneidadMoral = "JUZGADO";
+        Modelo.DesbloqueoAdministrativo = false;
+        Modelo.DesbloqueadoPor = null;
+        Modelo.FechaDesbloqueo = null;
+
+        try
+        {
+            await ModuloService.ActualizarAsync(Modelo);
+            Mensaje = "Registro bloqueado por Juzgado.";
+            EsError = false;
+            await JS.InvokeVoidAsync("alert", $"ATENCIÓN: El postulante {Modelo.NombreCompleto} (RUT: {Modelo.RUT}) ha sido derivado a JUZGADO. Su proceso quedó bloqueado.");
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error al bloquear por Juzgado: {ex.Message}";
+            EsError = true;
+        }
+    }
+
+    private async Task DesbloquearJuzgado()
+    {
+        if (Modelo is null || !PuedeGestionarJuzgado) return;
+
+        Modelo.DesbloqueoAdministrativo = true;
+        Modelo.DesbloqueadoPor = Sesion.Actual?.NombreUsuario ?? "SISTEMA";
+        Modelo.FechaDesbloqueo = DateTime.UtcNow;
+
+        try
+        {
+            await ModuloService.ActualizarAsync(Modelo);
+            Mensaje = "Bloqueo por Juzgado levantado administrativamente.";
+            EsError = false;
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error al desbloquear Juzgado: {ex.Message}";
+            EsError = true;
         }
     }
 
@@ -484,6 +596,10 @@
             Modelo.CambioDomicilioPedido = null;
             Modelo.CiudadCambioDomicilio = null;
             Modelo.LugarOrigenCambioDomicilio = null;
+        }
+        else
+        {
+            Modelo.LugarOrigenCambioDomicilio = Modelo.CiudadCambioDomicilio;
         }
     }
 
@@ -528,7 +644,7 @@
         {
             var valor = string.IsNullOrWhiteSpace(FiltroCiudadForm) ? null : FiltroCiudadForm.ToUpperInvariant();
             Modelo.CiudadCambioDomicilio = valor;
-            if (Modelo.CambioDomicilioPedido == "SI")
+            if (Modelo.CambioDomicilioActivo)
             {
                 Modelo.LugarOrigenCambioDomicilio = valor;
             }
@@ -543,7 +659,7 @@
     {
         if (Modelo is null) return;
         Modelo.CiudadCambioDomicilio = ciudad;
-        if (Modelo.CambioDomicilioPedido == "SI")
+        if (Modelo.CambioDomicilioActivo)
         {
             Modelo.LugarOrigenCambioDomicilio = ciudad;
         }
@@ -562,11 +678,6 @@
             && Modelo.FechaUltimaCarpeta.Value >= new DateTime(2023, 7, 1)
                 ? "SE ENCUENTRA EN OF.43"
                 : "SE ENCUENTRA EN ARCHIVOS";
-
-        if (Modelo.EstadoCarpeta == "SUBIDA A CONASET")
-            Modelo.FechaSubidaConaset = DateTime.Today;
-        else
-            Modelo.FechaSubidaConaset = null;
 
         if (!Modelo.CambioDomicilioActivo)
         {

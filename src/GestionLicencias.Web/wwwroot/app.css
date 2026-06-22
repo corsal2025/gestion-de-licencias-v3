@@ -444,6 +444,21 @@ select.ta-cell.ta-chip-ssgl { color: var(--ta-outline); }
     50% { opacity: .55; }
 }
 
+.ta-alerta-juzgado {
+    display: inline-flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .15rem .45rem;
+    border-radius: 4px;
+    background: #7b2020;
+    color: #ffd0d0;
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    white-space: nowrap;
+    animation: ta-pulse-soft 1.6s infinite;
+}
+
 /* ============================================================
    Pagination
    ============================================================ */

@@ -6,6 +6,10 @@
       "version": "10"
     }
   },
+  "updateContentCommand": "dotnet restore GestionLicencias.slnx",
+  "remoteEnv": {
+    "ConnectionStrings__DefaultConnection": "Data Source=/tmp/gestionlicencias.db"
+  },
   "forwardPorts": [5029],
   "portsAttributes": {
     "5029": {

@@ -78,24 +78,24 @@
         }
     }
 
-    private void OnAnioChanged(ChangeEventArgs e)
+    private async Task OnAnioChanged(ChangeEventArgs e)
     {
         AnioSeleccionado = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
         ActualizarDias();
-        NotificarValor();
+        await NotificarValor();
     }
 
-    private void OnMesChanged(ChangeEventArgs e)
+    private async Task OnMesChanged(ChangeEventArgs e)
     {
         MesSeleccionado = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
         ActualizarDias();
-        NotificarValor();
+        await NotificarValor();
     }
 
-    private void OnDiaChanged(ChangeEventArgs e)
+    private async Task OnDiaChanged(ChangeEventArgs e)
     {
         DiaSeleccionado = string.IsNullOrEmpty(e.Value?.ToString()) ? null : int.Parse(e.Value!.ToString()!);
-        NotificarValor();
+        await NotificarValor();
     }
 
     private void ActualizarDias()
@@ -122,7 +122,7 @@
         }
     }
 
-    private void NotificarValor()
+    private async Task NotificarValor()
     {
         DateTime? nuevoValor = null;
         if (AnioSeleccionado.HasValue && MesSeleccionado.HasValue && DiaSeleccionado.HasValue)
@@ -141,7 +141,7 @@
         {
             Value = nuevoValor;
             ultimoValorNotificado = nuevoValor;
-            ValueChanged.InvokeAsync(Value);
+            await ValueChanged.InvokeAsync(Value);
         }
     }
 

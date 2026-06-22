@@ -99,3 +99,13 @@ dotnet ef migrations add NombreDeLaMigracion --project src/GestionLicencias.Infr
 ## Desarrollo en contenedor
 
 El repositorio incluye `.devcontainer/` con la configuración para GitHub Codespaces / Dev Containers con .NET 10, y el script `iniciar.sh` para el arranque dentro del contenedor.
+
+## Modo cloud-first (sin operación local)
+
+Si querés operar el proyecto dejando el trabajo en nube (GitHub), usá GitHub Codespaces + GitHub Actions:
+
+1. Abrí el repo en Codespaces (preferiblemente en navegador)
+2. Ejecutá, compilá y desarrollá dentro del Codespace
+3. Hacé commit/push y validá la CI en GitHub Actions
+
+Guía completa en `GUIA_CLOUD_GITHUB.md`.

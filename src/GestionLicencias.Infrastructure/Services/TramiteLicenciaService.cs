@@ -83,6 +83,7 @@ public class TramiteLicenciaService : BaseTramiteService<TramiteLicencia>
                 t.EstadoCarpeta,
                 t.Otorgamiento,
                 t.LugarAtencion,
+                t.Asiste,
                 t.FechaNacimiento,
                 t.FechaCitacion,
                 t.FechaEntrega
@@ -101,6 +102,7 @@ public class TramiteLicenciaService : BaseTramiteService<TramiteLicencia>
         modelo.PorEstadoCarpeta = Agrupar(datos.Select(d => d.EstadoCarpeta), "SIN REGISTRO");
         modelo.PorOtorgamiento = Agrupar(datos.Select(d => d.Otorgamiento), "SIN OTORGAMIENTO");
         modelo.PorLugarAtencion = Agrupar(datos.Select(d => d.LugarAtencion), "SIN REGISTRO");
+        modelo.PorAsistencia = Agrupar(datos.Select(d => d.Asiste), "SIN REGISTRO");
 
         modelo.Edades = datos
             .Select(d => TramiteLicencia.CalcularEdad(d.FechaNacimiento))

@@ -11,6 +11,7 @@ public class EstadisticasModelo
     public Dictionary<string, int> PorEstadoCarpeta { get; set; } = new();
     public Dictionary<string, int> PorOtorgamiento { get; set; } = new();
     public Dictionary<string, int> PorLugarAtencion { get; set; } = new();
+    public Dictionary<string, int> PorAsistencia { get; set; } = new();
     public List<int> Edades { get; set; } = new();
     public List<PuntoDispersion> Dispersion { get; set; } = new();
 }
