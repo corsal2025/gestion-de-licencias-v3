@@ -3,6 +3,7 @@
 @implements IDisposable
 @inject ITramiteService<TramiteLicencia> ModuloService
 @inject NavigationManager Nav
+@inject TramitesBroadcast Broadcast
 
 <PageTitle>Seguimiento en Tiempo Real — Gestionador de Licencias</PageTitle>
 
@@ -45,13 +46,17 @@
             @foreach (var r in Registros)
             {
                 var n = Progreso(r);
-                var carPct = n == 0 ? 0 : (n - 1) * 100.0 / (Etapas.Length - 1);
+                var idx = UltimaEtapa(r);
+                var bloqueado = r.ProcesoBloqueado;
+                var carIdx = bloqueado && r.IdoneidadBloqueante ? 2 : idx;
+                var carPct = carIdx * 100.0 / (Etapas.Length - 1);
+                var wallPct = Math.Min(carPct + 6, 96);
                 <div class="ta-road-card">
                     <div class="ta-road-head">
                         <strong>@r.NombreCompleto</strong>
                         <span class="ta-mono" style="color:var(--ta-on-surface-variant);">@r.RUT</span>
                         <span class="ta-road-status @(n == Etapas.Length ? "ok" : "")">
-                            @(n == Etapas.Length ? "✓ ENTREGADA" : $"⏸ ESTANCADA EN: {Etapas[n].Nombre}")
+                            @(n == Etapas.Length ? "✓ ENTREGADA" : $"⏸ EN: {Etapas[n].Nombre}")
                         </span>
                     </div>
                     <div class="ta-road">
@@ -60,16 +65,21 @@
                         @for (var i = 0; i < Etapas.Length; i++)
                         {
                             var pct = i * 100.0 / (Etapas.Length - 1);
-                            <div class="ta-road-stop @(i < n ? "done" : "")"
+                            <div class="ta-road-stop @(i <= carIdx ? "done" : "")"
                                  style="left:@pct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
                                 <span class="dot"></span>
                                 <span class="lbl">@Etapas[i].Nombre</span>
                             </div>
                         }
-                        <div class="ta-road-car"
+                        <div class="ta-road-car @(bloqueado ? "ta-road-crashed" : "") @(n == Etapas.Length ? "ta-road-finished" : "")"
                              style="left:@carPct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">
-                            @(n == Etapas.Length ? "🏁" : "🚗")
+                            <span class="ta-road-car-lbl">@Etapas[carIdx].Nombre</span>
+                            <span>@(bloqueado ? "💥" : n == Etapas.Length ? "🏁" : "🚗")</span>
                         </div>
+                        @if (bloqueado)
+                        {
+                            <div class="ta-road-wall" style="left:@wallPct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%">🧱</div>
+                        }
                     </div>
                 </div>
             }
@@ -87,7 +97,7 @@
 
     private static readonly (string Nombre, Func<TramiteLicencia, bool> Lista)[] Etapas =
     [
-        ("CITACIÓN", r => r.FechaCitacion.HasValue),
+        ("CITACIÓN", r => r.Asiste == "SI"),
         ("CARPETA", r => !string.IsNullOrWhiteSpace(r.EstadoCarpeta) || r.FechaUltimaCarpeta.HasValue),
         ("IDONEIDAD", r => !string.IsNullOrWhiteSpace(r.IdoneidadMoral)),
         ("F8", r => !string.IsNullOrWhiteSpace(r.EstadoF8) || !string.IsNullOrWhiteSpace(r.FolioF8)),
@@ -102,6 +112,7 @@
         await Cargar();
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(SegundosRefresco));
         _ = RefrescoAutomatico();
+        Broadcast.Suscribir(OnTramiteGuardado);
     }
 
     private async Task RefrescoAutomatico()
@@ -130,6 +141,7 @@
             PageSize = 100000
         });
         Registros = res
+            .Where(r => r.Asiste == "SI")
             .OrderBy(r => Progreso(r))
             .ThenBy(r => r.NombreCompleto)
             .ToList();
@@ -137,7 +149,7 @@
         Cargando = false;
     }
 
-    // Furthest consecutive completed stage, starting from CITACIÓN.
+    // Furthest consecutive completed stage, starting from CITACIÓN (used for header/summary).
     private static int Progreso(TramiteLicencia r)
     {
         var n = 0;
@@ -149,16 +161,32 @@
         return n;
     }
 
+    // Highest stage index where any data exists — used for car position on the road.
+    private static int UltimaEtapa(TramiteLicencia r)
+    {
+        for (var i = Etapas.Length - 1; i >= 0; i--)
+            if (Etapas[i].Lista(r)) return i;
+        return 0;
+    }
+
     private IEnumerable<KeyValuePair<string, int>> ResumenEtapas() =>
         Registros
             .GroupBy(r => { var n = Progreso(r); return n == Etapas.Length ? "ENTREGADA" : Etapas[n].Nombre; })
             .OrderByDescending(g => g.Count())
             .Select(g => new KeyValuePair<string, int>(g.Key, g.Count()));
 
+    private async Task OnTramiteGuardado() =>
+        await InvokeAsync(async () =>
+        {
+            await Cargar();
+            StateHasChanged();
+        });
+
     private void Volver() => Nav.NavigateTo("/modulos/licencias");
 
     public void Dispose()
     {
+        Broadcast.Desuscribir(OnTramiteGuardado);
         _timer?.Dispose();
         _timer = null;
     }

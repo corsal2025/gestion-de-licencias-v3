@@ -16,6 +16,7 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddGestionLicenciasInfrastructure(builder.Configuration);
 builder.Services.AddScoped<SesionUsuario>();
+builder.Services.AddSingleton<TramitesBroadcast>();
 
 var app = builder.Build();
 

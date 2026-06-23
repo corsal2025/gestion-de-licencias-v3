@@ -319,20 +319,26 @@ tr.ec-10 td:first-child { box-shadow: inset 4px 0 0 #ff7a6e; }
 tr.ec-11 td:first-child { box-shadow: inset 4px 0 0 #ffe05f; }
 tr.ec-12 td:first-child { box-shadow: inset 4px 0 0 #7bffea; }
 
-/* The ESTADO DE LA CARPETA select itself takes the state color */
-select.ta-estado.ec-0  { color: #4edea3; font-weight: 700; }
-select.ta-estado.ec-1  { color: #ffe05f; font-weight: 700; }
-select.ta-estado.ec-2  { color: #5b9bff; font-weight: 700; }
-select.ta-estado.ec-3  { color: #9d7bff; font-weight: 700; }
-select.ta-estado.ec-4  { color: #ff7ad9; font-weight: 700; }
-select.ta-estado.ec-5  { color: #4ed4de; font-weight: 700; }
-select.ta-estado.ec-6  { color: #b9bbcc; font-weight: 700; }
-select.ta-estado.ec-7  { color: #c9a86a; font-weight: 700; }
-select.ta-estado.ec-8  { color: #ffb95f; font-weight: 700; }
-select.ta-estado.ec-9  { color: #ff9d3c; font-weight: 700; }
-select.ta-estado.ec-10 { color: #ff7a6e; font-weight: 700; }
-select.ta-estado.ec-11 { color: #adc6ff; font-weight: 700; }
-select.ta-estado.ec-12 { color: #7bffea; font-weight: 700; }
+/* The ESTADO DE LA CARPETA select itself takes the state color + row background */
+select.ta-estado.ec-0  { color: #4edea3; font-weight: 700; background: #265953; }
+select.ta-estado.ec-1  { color: #ffe05f; font-weight: 700; background: #5F5A3E; }
+select.ta-estado.ec-2  { color: #5b9bff; font-weight: 700; background: #2A4471; }
+select.ta-estado.ec-3  { color: #9d7bff; font-weight: 700; background: #3F3A71; }
+select.ta-estado.ec-4  { color: #ff7ad9; font-weight: 700; background: #5F3965; }
+select.ta-estado.ec-5  { color: #4ed4de; font-weight: 700; background: #265666; }
+select.ta-estado.ec-6  { color: #b9bbcc; font-weight: 700; background: #3A4053; }
+select.ta-estado.ec-7  { color: #c9a86a; font-weight: 700; background: #4D4841; }
+select.ta-estado.ec-8  { color: #ffb95f; font-weight: 700; background: #5F4E3E; }
+select.ta-estado.ec-9  { color: #ff9d3c; font-weight: 700; background: #5F4532; }
+select.ta-estado.ec-10 { color: #ff7a6e; font-weight: 700; background: #5F3942; }
+select.ta-estado.ec-11 { color: #adc6ff; font-weight: 700; background: #445271; }
+select.ta-estado.ec-12 { color: #7bffea; font-weight: 700; background: #34646A; }
+
+/* When focused, keep the state color — don't let .ta-cell:focus override it */
+select.ta-estado:focus {
+    background: inherit;
+    border-bottom-color: currentColor;
+}
 
 /* ============================================================
    Column section groups — colored group headers + separators
@@ -392,6 +398,14 @@ input.ta-cell {
 
 select.ta-cell { cursor: pointer; }
 select.ta-cell option { background: var(--ta-surface-container-high); }
+select.ta-cell:disabled { opacity: 0.75; cursor: default; }
+
+/* Rows where ASISTE ≠ SI: hide all columns from CARPETA onwards */
+tr.ta-pendiente td.sep-carpeta,
+tr.ta-pendiente td.sep-carpeta ~ td:not(.sep-acciones) {
+    visibility: hidden;
+    pointer-events: none;
+}
 
 .ta-cell-date { min-width: 8.2rem; }
 
@@ -931,6 +945,47 @@ select.ta-cell.ta-no {
     animation: none;
 }
 
+/* Carpeta state badge row */
+.ta-road-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .4rem;
+    padding: .35rem .75rem .5rem;
+    font-size: .72rem;
+}
+
+.ta-road-ec {
+    font-weight: 700;
+    padding: .2rem .55rem;
+    border-radius: 4px;
+}
+
+.ta-road-ec-0  { background: #265953; color: #4edea3; }
+.ta-road-ec-1  { background: #5F5A3E; color: #ffe05f; }
+.ta-road-ec-2  { background: #2A4471; color: #5b9bff; }
+.ta-road-ec-3  { background: #3F3A71; color: #9d7bff; }
+.ta-road-ec-4  { background: #5F3965; color: #ff7ad9; }
+.ta-road-ec-5  { background: #265666; color: #4ed4de; }
+.ta-road-ec-6  { background: #3A4053; color: #b9bbcc; }
+.ta-road-ec-7  { background: #4D4841; color: #c9a86a; }
+.ta-road-ec-8  { background: #5F4E3E; color: #ffb95f; }
+.ta-road-ec-9  { background: #5F4532; color: #ff9d3c; }
+.ta-road-ec-10 { background: #5F3942; color: #ff7a6e; }
+.ta-road-ec-11 { background: #445271; color: #adc6ff; }
+.ta-road-ec-12 { background: #34646A; color: #7bffea; }
+.ta-road-ec-none { color: var(--ta-on-surface-variant); font-style: italic; }
+
+.ta-road-meta-date { color: var(--ta-on-surface-variant); }
+
+.ta-road-idoneidad {
+    font-weight: 700;
+    padding: .2rem .5rem;
+    border-radius: 4px;
+}
+.ta-road-idoneidad.warn   { background: rgba(255,157,60,.15); color: #ff9d3c; }
+.ta-road-idoneidad.danger { background: rgba(255,122,110,.15); color: #ff7a6e; }
+
 .ta-road {
     position: relative;
     height: 92px;
@@ -1001,11 +1056,73 @@ select.ta-cell.ta-no {
 
 .ta-road-car {
     position: absolute;
-    top: 4px;
+    top: -10px;
     transform: translateX(-50%);
     font-size: 26px;
     transition: left .6s ease;
-    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .5));
+    filter: drop-shadow(0 3px 4px rgba(0,0,0,.5));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    z-index: 4;
+}
+
+.ta-road-car-lbl {
+    font-size: .5rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    color: #fff;
+    background: rgba(0,0,0,.72);
+    border: 1px solid rgba(255,255,255,.13);
+    padding: 1px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.ta-road-crashed .ta-road-car-lbl {
+    background: rgba(180,30,30,.8);
+    border-color: rgba(255,100,100,.35);
+}
+
+.ta-road-crashed > span:last-child {
+    display: inline-block;
+    animation: ta-crash-shake .5s ease-out forwards;
+}
+
+@keyframes ta-crash-shake {
+    0%   { transform: translateX(0)    rotate(0deg); }
+    15%  { transform: translateX(-6px) rotate(-14deg); }
+    30%  { transform: translateX(4px)  rotate(7deg); }
+    45%  { transform: translateX(-3px) rotate(-10deg); }
+    60%  { transform: translateX(2px)  rotate(-12deg); }
+    100% { transform: translateX(0)    rotate(-12deg); }
+}
+
+.ta-road-finished > span:last-child {
+    display: inline-block;
+    animation: ta-finished-bounce 1.2s ease-in-out infinite;
+}
+
+@keyframes ta-finished-bounce {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-5px); }
+}
+
+.ta-road-wall {
+    position: absolute;
+    top: -6px;
+    transform: translateX(-50%);
+    font-size: 22px;
+    z-index: 3;
+    filter: drop-shadow(0 2px 6px rgba(255,80,80,.5));
+    animation: ta-wall-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ta-wall-pulse {
+    0%, 100% { filter: drop-shadow(0 2px 6px rgba(255,80,80,.4)); }
+    50%       { filter: drop-shadow(0 2px 14px rgba(255,80,80,.85)); }
 }
 
 /* Email domains modal */
